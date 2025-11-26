@@ -119,5 +119,64 @@ int main() {
 }
 ```
 
+## 🔧 API 设计理念
 
+### 流畅接口设计
 
+```cpp
+// 所有几何对象共享统一接口
+circle.translate(10, 20).rotate(45).scale(2.0);
+rect.translate(10, 20).rotate(45).scale(2.0);
+
+// 链式绘制调用
+canvas.clear(Black)
+     .rect(10, 10, 100, 50, LightBlue)
+     .circle(50, 50, 30, Red)
+     .text("Hello", 20, 20, White);
+```
+
+### 显式控制流程
+
+```cpp
+Window window(800, 600);     // 显式创建窗口
+window.show();               // 显式显示窗口
+Canvas canvas(800, 600);     // 显式创建画布
+canvas.circle(...);          // 显式绘制图形
+window.render(canvas);       // 显式执行渲染
+```
+
+#### 📚 示例代码
+
+项目包含多个实用示例：
+
+· basic_demo.cpp - 基础图形绘制
+
+· multi_window.cpp - 多窗口管理
+
+· clock_app.cpp - 实时时钟应用
+
+· file_drop.cpp - 文件拖放功能
+
+#### 🐛 问题反馈
+
+如果你遇到任何问题，请通过以下方式反馈：
+
+1. 在 GitHub Issues 中创建新问题
+
+2. 描述详细的重现步骤
+
+3. 提供相关的代码片段和错误信息
+
+#### 📄 许可证
+
+本项目采用 MIT 许可证 - 这是最宽松的开源许可证之一。
+
+**主要权利**：
+· ✅ 自由使用、复制和修改
+
+· ✅ 用于商业项目
+
+· ✅ 分发原始或修改版本
+
+**唯一要求**：
+📝 在分发时保留原始的版权声明
