@@ -1,6 +1,6 @@
 #pragma once
 #ifdef _WIN32
-#define NOMINMAX  // ±ÜÃâmax,min³åÍ»
+#define NOMINMAX  // é¿å…max,minå†²çª
 #include <windows.h>
 #endif
 #include <cmath>
@@ -12,8 +12,8 @@
 #pragma comment(lib, "gdiplus.lib")
 
 namespace pa2d {
-    /* pa2d_math.h -- ¼¸ºÎ¿â*/
-    /* ºê¶¨Òå -- ÓÃÓÚ¼ò»¯¶àÌ¬´úÂë*/
+    /* pa2d_math.h -- å‡ ä½•åº“*/
+    /* å®å®šä¹‰ -- ç”¨äºç®€åŒ–å¤šæ€ä»£ç */
     namespace {
 #define DECLARE_SHAPE_VIRTUAL_FUNCTIONS(ClassName, PureVirtual) \
     virtual ClassName& translate(float dx, float dy) PureVirtual; \
@@ -35,7 +35,7 @@ namespace pa2d {
     operator std::vector<Point>() const&; \
     operator std::vector<Point>()&&
     }
-    // ==================== »ù´¡ÊıÑ§ÀàĞÍ ====================
+    // ==================== åŸºç¡€æ•°å­¦ç±»å‹ ====================
     struct Point {
         float x, y;
         Point();
@@ -75,7 +75,7 @@ namespace pa2d {
         Point center() const;
         bool contains(float px, float py) const;
     };
-    // ==================== Í¼ĞÎ»ùÀà ====================
+    // ==================== å›¾å½¢åŸºç±» ====================
     class Shape {
     public:
         enum class GeometryType {
@@ -95,7 +95,7 @@ namespace pa2d {
     private:
         GeometryType type = GeometryType::POINTS;
     };
-    // ==================== Í¼ĞÎ¶ÔÏó ====================
+    // ==================== å›¾å½¢å¯¹è±¡ ====================
     class Points : public Shape, public std::vector<Point> {
     public:
         Points();
@@ -366,14 +366,14 @@ namespace pa2d {
         static Builder from(float x, float y);
         static Builder from(const Point& start);
     };
-    // ==================== ÑÕÉ«ÏµÍ³ ====================
+    // ==================== é¢œè‰²ç³»ç»Ÿ ====================
     struct Color {
         union { uint32_t data, argb; struct { uint8_t b, g, r, a; }; struct { uint32_t rgb : 24, _ : 8; }; };
         Color() :data(0) {} Color(uint32_t argb) :data(argb) {} Color(uint8_t a, uint8_t r, uint8_t g, uint8_t b) :a(a), r(r), g(g), b(b) {}
         Color(uint8_t alpha, const Color& base) : data((static_cast<uint32_t>(alpha) << 24) | (base.data & 0x00FFFFFF)) {}
         operator uint32_t() const { return data; }
     };
-    // »ù´¡ÑÕÉ«
+    // åŸºç¡€é¢œè‰²
     namespace {
         const Color Red = 0xFFFF0000;
         const Color Green = 0xFF00FF00;
@@ -397,7 +397,7 @@ namespace pa2d {
         const Color LightBlue = 0xFFADD8E6;
         const Color LightGreen = 0xFF90EE90;
     }
-    // ==================== Î»Í¼´æ´¢ ====================
+    // ==================== ä½å›¾å­˜å‚¨ ====================
     struct Buffer {
         Color* color;
         int width, height;
@@ -422,12 +422,12 @@ namespace pa2d {
 
         explicit operator bool() const { return isValid(); }
     };
-    // ==================== äÖÈ¾Ëã·¨ ====================
-    // Í¼Ïñ¼ÓÔØ
+    // ==================== æ¸²æŸ“ç®—æ³• ====================
+    // å›¾åƒåŠ è½½
     bool load_image(Buffer& buffer, const char* filePath);
     bool load_image(Buffer& buffer, int resourceID);
     bool load_image(Buffer& buffer, void* hInstance, int resourceID);
-    // Í¼Ïñ±ä»»
+    // å›¾åƒå˜æ¢
     Buffer crop(const Buffer& src, int x, int y, int w, int h);
     void drawScaledBuffer(Buffer& dest, const Buffer& src, float centerX, float centerY, float scaleX, float scaleY);
     void drawScaledBuffer(Buffer& dest, const Buffer& src, float centerX, float centerY, float scale);
@@ -437,7 +437,7 @@ namespace pa2d {
     Buffer scaleBuffer(const Buffer& src, float factor);
     Buffer rotatedBuffer(const Buffer& src, float rotation);
     Buffer scaledRotatedBuffer(const Buffer& src, float scale = 1.0f, float rotation = 0.0f);
-    // Í¼Ïñ»ìºÏ
+    // å›¾åƒæ··åˆ
     void CopyBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
     void AlphaBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
     void AddBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
@@ -445,7 +445,7 @@ namespace pa2d {
     void ScreenBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
     void OverlayBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
     void DestAlphaBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
-    // Í¼ĞÎäÖÈ¾
+    // å›¾å½¢æ¸²æŸ“
     void drawLine(Buffer& buffer, float fx0, float fy0, float fx1, float fy1, const Color& color, float lineWidth = 1.0f);
     void drawPolyline(Buffer& buffer, const std::vector<Point>& points, const Color& color, float lineWidth = 1.0f, bool closed = false);
     void drawRect(Buffer& buffer, float x, float y, float width, float height, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
@@ -458,13 +458,13 @@ namespace pa2d {
     void drawEllipse(Buffer& buffer, float cx, float cy, float width, float height, float angle, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
     void drawSector(Buffer& buffer, float cx, float cy, float radius, float startAngleDeg, float endAngleDeg, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f, bool drawArc = true, bool drawRadialEdges = true);
     void drawPolygon(Buffer& buffer, const std::vector<Point>& vertices, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
-    // ÎÄ×ÖäÖÈ¾
-    /* --------- ÎÄ×Ö±àÂëÉèÖÃ start --------*/
+    // æ–‡å­—æ¸²æŸ“
+    /* --------- æ–‡å­—ç¼–ç è®¾ç½® start --------*/
     enum class TextEncoding { ANSI, UTF8, UTF16, CURRENT };
     TextEncoding textEncoding(TextEncoding newEncoding = TextEncoding::CURRENT);
-    /* --------- ÎÄ×Ö±àÂëÉèÖÃ  end  --------*/
+    /* --------- æ–‡å­—ç¼–ç è®¾ç½®  end  --------*/
     void setTextAntiAliasing(bool enable);
-    // ÎÄ×ÖÑùÊ½½á¹¹Ìå
+    // æ–‡å­—æ ·å¼ç»“æ„ä½“
     class FontStyle {
     private:
         int m_styleBits = 0;
@@ -484,22 +484,22 @@ namespace pa2d {
         bool operator&(const FontStyle& other) const;
         bool operator==(const FontStyle& other) const;
     };
-    // ÎÄ×Ö²âÁ¿º¯Êı
+    // æ–‡å­—æµ‹é‡å‡½æ•°
     bool measureText(const std::wstring& text, int fontSize, const std::wstring& fontName, const FontStyle& style, int& width, int& height);
     bool measureText(const std::string& text, int fontSize, const std::string& fontName, const FontStyle& style, int& width, int& height);
     int calculateFontSize(const std::wstring& text, float maxWidth, float maxHeight, int preferredFontSize = 12, const std::wstring& fontName = L"Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
     int calculateFontSize(const std::string& text, float maxWidth, float maxHeight, int preferredFontSize = 12, const std::string& fontName = "Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
-    //ÎÄ×ÖäÖÈ¾º¯Êı£¨string°æ£©
+    //æ–‡å­—æ¸²æŸ“å‡½æ•°ï¼ˆstringç‰ˆï¼‰
     bool drawText(Buffer& buffer, const std::string& text, float x, float y, const Color& color = Color(255, 255, 255, 255), int fontSize = 16, const std::string& fontName = "Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
     void drawTextInRect(Buffer& buffer, const std::string& text, float rectX, float rectY, float rectWidth, float rectHeight, const Color& color = Color(255, 255, 255, 255), int fontSize = 16, const std::string& fontName = "Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
     void drawTextFitRect(Buffer& buffer, const std::string& text, float rectX, float rectY, float rectWidth, float rectHeight, const Color& color = Color(255, 255, 255, 255), int preferredFontSize = 12, const std::string& fontName = "Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
     void drawTextCentered(Buffer& buffer, const std::string& text, float centerX, float centerY, const Color& color = Color(255, 255, 255, 255), int fontSize = 16, const std::string& fontName = "Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
-    //ÎÄ×ÖäÖÈ¾º¯Êı£¨wstring°æ£©
+    //æ–‡å­—æ¸²æŸ“å‡½æ•°ï¼ˆwstringç‰ˆï¼‰
     bool drawText(Buffer& buffer, const std::wstring& text, float x, float y, const Color& color = Color(255, 255, 255, 255), int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
     void drawTextInRect(Buffer& buffer, const std::wstring& text, float rectX, float rectY, float rectWidth, float rectHeight, const Color& color = Color(255, 255, 255, 255), int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
     void drawTextFitRect(Buffer& buffer, const std::wstring& text, float rectX, float rectY, float rectWidth, float rectHeight, const Color& color = Color(255, 255, 255, 255), int preferredFontSize = 12, const std::wstring& fontName = L"Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
     void drawTextCentered(Buffer& buffer, const std::wstring& text, float centerX, float centerY, const Color& color = Color(255, 255, 255, 255), int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
-    // ==================== Í¼ĞÎÑùÊ½ ====================
+    // ==================== å›¾å½¢æ ·å¼ ====================
     struct Style {
         Color fillColor_;
         Color strokeColor_;
@@ -592,12 +592,12 @@ namespace pa2d {
         operator StyleBuilder() const;
     };
 
-    // ×ÖÃæÁ¿¿ª¹Øºê
+    // å­—é¢é‡å¼€å…³å®
 #ifndef PA2D_DISABLE_LITERALS
     namespace detail {
         uint32_t parseColorString(const char* str, size_t len);
     }
-    // Êı×Ö×ÖÃæÁ¿²Ù×÷·û
+    // æ•°å­—å­—é¢é‡æ“ä½œç¬¦
     inline FillTag operator"" _fill(unsigned long long hex) { return FillTag(static_cast<uint32_t>(hex)); }
     inline StrokeTag operator"" _stroke(unsigned long long hex) { return StrokeTag(static_cast<uint32_t>(hex)); }
     inline WidthTag operator"" _w(long double w) { return WidthTag(static_cast<float>(w)); }
@@ -606,23 +606,23 @@ namespace pa2d {
     inline RadiusTag operator"" _r(unsigned long long r) { return RadiusTag(static_cast<float>(r)); }
     inline OpacityTag operator"" _o(long double o) { return OpacityTag(static_cast<float>(o)); }
 
-    // ×Ö·û´®×ÖÃæÁ¿²Ù×÷·û
+    // å­—ç¬¦ä¸²å­—é¢é‡æ“ä½œç¬¦
     inline FillTag operator"" _fill(const char* str, size_t len) { return FillTag(detail::parseColorString(str, len)); }
     inline StrokeTag operator"" _stroke(const char* str, size_t len) { return StrokeTag(detail::parseColorString(str, len)); }
 #endif // PA2D_DISABLE_LITERALS
 
-    // ³£Á¿¶¨Òå
+    // å¸¸é‡å®šä¹‰
     extern const DrawArcTag draw_arc;
     extern const DrawArcTag no_arc;
     extern const DrawRadialEdgesTag draw_edges;
     extern const DrawRadialEdgesTag no_edges;
 
     StyleBuilder operator+(const StyleBuilder& builder, const TagBase& newTag);
-    // ==================== äÖÈ¾ÏµÍ³ ====================
+    // ==================== æ¸²æŸ“ç³»ç»Ÿ ====================
     class Canvas {
         Buffer buffer;
     public:
-        // ¹¹Ôìº¯Êı
+        // æ„é€ å‡½æ•°
         Canvas();
         Canvas(int width, int height, Color background = 0xFFFFFFFF);
         Canvas(const Buffer& buf);
@@ -632,25 +632,25 @@ namespace pa2d {
         Canvas(const char* filePath);
         Canvas(int resourceID);
 
-        // »ù´¡ÊôĞÔ·ÃÎÊ
+        // åŸºç¡€å±æ€§è®¿é—®
         int width() const;
         int height() const;
         bool isValid() const;
         const Buffer& getBuffer() const;
         Buffer& getBuffer();
 
-        // ÏñËØ·ÃÎÊ
+        // åƒç´ è®¿é—®
         Color& at(int x, int y);
         const Color& at(int x, int y) const;
 
-        // Í¼Ïñ²Ù×÷
+        // å›¾åƒæ“ä½œ
         bool loadImage(const char* filePath);
         bool loadImage(int resourceID);
         Canvas& clear(Color color = 0xFFFFFFFF);
         Canvas& crop(int x, int y, int width, int height);
         Canvas& resize(int newWidth, int newHeight, uint32_t clearColor = 0xFFFFFFFF);
 
-        // »ìºÏ²Ù×÷
+        // æ··åˆæ“ä½œ
         Canvas& alphaBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
         Canvas& addBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
         Canvas& multiplyBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
@@ -659,20 +659,20 @@ namespace pa2d {
         Canvas& destAlphaBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
         Canvas& copyBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
 
-        // ±ä»»²Ù×÷
+        // å˜æ¢æ“ä½œ
         Canvas& draw(const Canvas& other, int x = 0, int y = 0, int alpha = 255);
         Canvas& drawRotated(const Canvas& src, float centerX, float centerY, float rotation = 0.0f);
         Canvas& drawScaled(const Canvas& src, float centerX, float centerY, float scaleX, float scaleY);
         Canvas& drawScaled(const Canvas& src, float centerX, float centerY, float scale = 1.0f);
         Canvas& drawScaledRotated(const Canvas& src, float centerX, float centerY, float scale = 1.0f, float rotation = 0.0f);
 
-        // ´´½¨±ä»»ºóµÄ¸±±¾
+        // åˆ›å»ºå˜æ¢åçš„å‰¯æœ¬
         Canvas createCropped(int x, int y, int width, int height) const;
         Canvas createScaled(float scaleX, float scaleY) const;
         Canvas createRotated(float rotation) const;
         Canvas createScaledRotated(float scale = 1.0f, float rotation = 0.0f) const;
 
-        // »ù´¡»æÖÆ·½·¨
+        // åŸºç¡€ç»˜åˆ¶æ–¹æ³•
         Canvas& rect(float x, float y, float width, float height, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
         Canvas& rect(float centerX, float centerY, float width, float height, float angle, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
         Canvas& roundRect(float x, float y, float width, float height, const Color& fillColor = 0, const Color& strokeColor = 0, float cornerRadius = 0.0f, float strokeWidth = 1.0f, float opacity = 1.0f);
@@ -686,7 +686,7 @@ namespace pa2d {
         Canvas& polyline(const std::vector<Point>& points, const Color& color, float lineWidth = 1.0f, bool closed = false);
         Canvas& polygon(const std::vector<Point>& vertices, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
 
-        // ÖÇÄÜ»æÖÆº¯Êı
+        // æ™ºèƒ½ç»˜åˆ¶å‡½æ•°
         Canvas& draw(const Line& line, const Style& style);
         Canvas& draw(const Ray& ray, const Style& style);
         Canvas& draw(const Triangle& triangle, const Style& style);
@@ -697,7 +697,7 @@ namespace pa2d {
         Canvas& draw(const Points& points, const Style& style);
         Canvas& draw(const Polygon& polygon, const Style& style);
 
-        // ÅúÁ¿»æÖÆ
+        // æ‰¹é‡ç»˜åˆ¶
         template<typename GeometryType>
         Canvas& drawBatch(const std::vector<GeometryType>& geometries, const Style& style) {
             for (const auto& geometry : geometries)draw(geometry, style);
@@ -714,7 +714,7 @@ namespace pa2d {
             return *this;
         }
 
-        // ÎÄ±¾»æÖÆ·½·¨
+        // æ–‡æœ¬ç»˜åˆ¶æ–¹æ³•
         Canvas& text(const std::wstring& text, int x, int y, const Color& color = 0xFF000000, int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
         Canvas& textCentered(const std::wstring& text, int centerX, int centerY, const Color& color = 0xFF000000, int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
         Canvas& textInRect(const std::wstring& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = 0xFF000000, int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
@@ -726,7 +726,7 @@ namespace pa2d {
         Canvas& textFitRect(const std::string& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = 0xFF000000, int preferredFontSize = 16, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
     };
 
-    // ==================== ´°¿ÚÏµÍ³ ====================
+    // ==================== çª—å£ç³»ç»Ÿ ====================
     struct KeyEvent {
         int keyCode;
         bool pressed;
@@ -734,22 +734,22 @@ namespace pa2d {
 
     struct MouseEvent {
         int x, y;
-        int button;       // 0=×ó¼ü, 1=ÓÒ¼ü, 2=ÖĞ¼ü, -1=¹öÂÖ, -2=ÒÆ¶¯, -3=Àë¿ª
-        bool pressed;     // ¶ÔÓÚ°´¼ü°´ÏÂ/ÊÍ·Å
-        int wheelDelta;  // ¹öÂÖÔöÁ¿
+        int button;       // 0=å·¦é”®, 1=å³é”®, 2=ä¸­é”®, -1=æ»šè½®, -2=ç§»åŠ¨, -3=ç¦»å¼€
+        bool pressed;     // å¯¹äºæŒ‰é”®æŒ‰ä¸‹/é‡Šæ”¾
+        int wheelDelta;  // æ»šè½®å¢é‡
     };
 
     class Window {
     public:
-        // ¹¹Ôì/Îö¹¹
+        // æ„é€ /ææ„
         Window(int width, int height, const char* title);
         ~Window();
 
-        // ½ûÖ¹¿½±´
+        // ç¦æ­¢æ‹·è´
         Window(const Window&) = delete;
         Window& operator=(const Window&) = delete;
 
-        // ÊÂ¼ş»Øµ÷
+        // äº‹ä»¶å›è°ƒ
         using KeyCallback = std::function<void(const KeyEvent&)>;
         using MouseCallback = std::function<void(const MouseEvent&)>;
         using ResizeCallback = std::function<void(int, int)>;
@@ -759,7 +759,7 @@ namespace pa2d {
         using MenuCallback = std::function<void(int)>;
         using FileListCallback = std::function<void(const std::vector<std::string>&)>;
 
-        // Á´Ê½µ÷ÓÃµÄ»Øµ÷ÉèÖÃ·½·¨
+        // é“¾å¼è°ƒç”¨çš„å›è°ƒè®¾ç½®æ–¹æ³•
         Window& onKey(KeyCallback cb);
         Window& onMouse(MouseCallback cb);
         Window& onResize(ResizeCallback cb);
@@ -772,7 +772,7 @@ namespace pa2d {
 
         Window& disableClipboardFiles();
 
-        // ´°¿Ú×´Ì¬
+        // çª—å£çŠ¶æ€
         bool isOpen() const { return !shouldClose_; }
         Window& close();
 
@@ -781,53 +781,53 @@ namespace pa2d {
         bool isVisible() const { return hwnd_ && IsWindowVisible(hwnd_); }
         bool isFullscreen() const { return isFullscreen_; }
 
-        // ´°¿Ú´óĞ¡ÏŞÖÆ
+        // çª—å£å¤§å°é™åˆ¶
         Window& setMinSize(int minWidth, int minHeight);
         Window& setMaxSize(int maxWidth, int maxHeight);
 
-        // ´°¿ÚÑùÊ½¿ØÖÆ
+        // çª—å£æ ·å¼æ§åˆ¶
         Window& setResizable(bool resizable);
         Window& setAlwaysOnTop(bool onTop);
         Window& setBorderless(bool borderless);
         Window& setFullscreen(bool fullscreen);
 
-        // ¿ØÖÆÓÒÉÏ½Ç°´Å¥
+        // æ§åˆ¶å³ä¸Šè§’æŒ‰é’®
         Window& setMinimizeButton(bool show);
         Window& setMaximizeButton(bool show);
         Window& setCloseButton(bool show);
 
-        // Êó±ê×´Ì¬²éÑ¯
+        // é¼ æ ‡çŠ¶æ€æŸ¥è¯¢
         std::pair<int, int> getMousePosition() const;
         bool isMouseInWindow() const;
         static std::pair<int, int> getGlobalMousePosition();
         bool isMouseButtonPressed(int button) const;
 
-        // Êó±ê²¶»ñÓë¹â±ê¿ØÖÆ
+        // é¼ æ ‡æ•è·ä¸å…‰æ ‡æ§åˆ¶
         Window& setMouseCapture(bool capture);
         Window& setCursorVisibility(bool visible);
         Window& setCursorPosition(int x, int y);
 
-        // °´¼ü×´Ì¬²éÑ¯
+        // æŒ‰é”®çŠ¶æ€æŸ¥è¯¢
         bool isKeyPressed(int vkCode) const;
         bool isShiftPressed() const;
         bool isCtrlPressed() const;
         bool isAltPressed() const;
 
-        // ¼ôÌù°å
+        // å‰ªè´´æ¿
         bool setClipboardText(const std::string& text);
         std::string getClipboardText();
         bool setClipboardText(const std::wstring& text);
         std::wstring getClipboardTextW();
         bool hasClipboardText() const;
 
-        // ÎÄ¼şÍÏ·Å·½·¨
+        // æ–‡ä»¶æ‹–æ”¾æ–¹æ³•
         Window& enableFileDrop(bool enable = true);
 
-        // ÎÄ¼ş¼ôÌù°åÖ§³Ö
+        // æ–‡ä»¶å‰ªè´´æ¿æ”¯æŒ
         std::vector<std::string> getClipboardFiles();
         bool hasClipboardFiles() const;
 
-        // ´°¿Ú²Ù×÷ - Á´Ê½µ÷ÓÃ
+        // çª—å£æ“ä½œ - é“¾å¼è°ƒç”¨
         Window& show();
         Window& hide();
         Window& maximize();
@@ -837,7 +837,7 @@ namespace pa2d {
         Window& focus();
         Window& flash(bool flashTitleBar = true);
 
-        // ´°¿Ú´óĞ¡ºÍÎ»ÖÃ - Á´Ê½µ÷ÓÃ
+        // çª—å£å¤§å°å’Œä½ç½® - é“¾å¼è°ƒç”¨
         Window& setPosition(int x, int y);
         Window& setClientSize(int width, int height);
         Window& setWindowSize(int width, int height);
@@ -846,12 +846,12 @@ namespace pa2d {
         void getClientSize(int& width, int& height) const;
         void getWindowSize(int& width, int& height) const;
 
-        // ±êÌâÉèÖÃ - Á´Ê½µ÷ÓÃ
+        // æ ‡é¢˜è®¾ç½® - é“¾å¼è°ƒç”¨
         Window& setTitle(const char* title);
         Window& setTitle(const wchar_t* title);
         std::string getTitle() const;
 
-        // ¹â±êÉèÖÃ - Á´Ê½µ÷ÓÃ
+        // å…‰æ ‡è®¾ç½® - é“¾å¼è°ƒç”¨
         Window& setCursor(HCURSOR cursor);
         Window& setCursorDefault();
         Window& setCursorWait();
@@ -859,11 +859,11 @@ namespace pa2d {
         Window& setCursorHand();
         Window& setCursorText();
 
-        // Í¼±êÉèÖÃ - Á´Ê½µ÷ÓÃ
+        // å›¾æ ‡è®¾ç½® - é“¾å¼è°ƒç”¨
         Window& setIcon(HICON icon);
         Window& setIconFromResource(int resourceId);
 
-        // ²Ëµ¥¹¦ÄÜ - Á´Ê½µ÷ÓÃ
+        // èœå•åŠŸèƒ½ - é“¾å¼è°ƒç”¨
         Window& setMenu(HMENU menu);
         HMENU createMenu();
         HMENU createPopupMenu();
@@ -872,7 +872,7 @@ namespace pa2d {
         Window& appendMenuPopup(HMENU menu, const char* text, HMENU popupMenu);
         Window& destroyMenu(HMENU menu);
 
-        // äÖÈ¾¹¦ÄÜ
+        // æ¸²æŸ“åŠŸèƒ½
         void render(const Buffer& buffer, int destX = 0, int destY = 0,
             int srcX = 0, int srcY = 0, int width = -1, int height = -1,
             bool clearBackground = true, COLORREF bgColor = 0);
@@ -882,26 +882,26 @@ namespace pa2d {
             bool clearBackground = true, COLORREF bgColor = 0);
         void renderCentered(const Canvas& canvas, bool clearBackground = true, COLORREF bgColor = 0);
 
-        // ÏµÍ³ĞÅÏ¢£¨¾²Ì¬·½·¨£©
+        // ç³»ç»Ÿä¿¡æ¯ï¼ˆé™æ€æ–¹æ³•ï¼‰
         static std::pair<int, int> getScreenSize();
         static std::pair<int, int> getWorkAreaSize();
         static double getDpiScale();
 
-        // ¹«¿ª³ÉÔ±±äÁ¿£¨±£³Ö¼òµ¥·ÃÎÊ£©
+        // å…¬å¼€æˆå‘˜å˜é‡ï¼ˆä¿æŒç®€å•è®¿é—®ï¼‰
         HWND hwnd_ = nullptr;
         int width_ = 0;
         int height_ = 0;
         bool shouldClose_ = false;
 
     private:
-        // Ïß³Ì¿ØÖÆ
+        // çº¿ç¨‹æ§åˆ¶
         std::thread messageThread_;
         std::atomic<bool> running_{ false };
         DWORD threadId_ = 0;
         std::promise<bool> initPromise_;
 
-        // ´°¿ÚÑùÊ½
-        // ÎŞ±ß¿ò×´Ì¬
+        // çª—å£æ ·å¼
+        // æ— è¾¹æ¡†çŠ¶æ€
         LONG borderlessOriginalStyle_ = 0;
         LONG borderlessOriginalExStyle_ = 0;
         int borderlessOriginalClientWidth_ = 0;
@@ -909,35 +909,35 @@ namespace pa2d {
         bool borderlessStateSaved_ = false;
         bool isBorderless_ = false;
 
-        // È«ÆÁ×´Ì¬
+        // å…¨å±çŠ¶æ€
         LONG fullscreenOriginalStyle_ = 0;
         LONG fullscreenOriginalExStyle_ = 0;
         RECT fullscreenOriginalRect_ = { 0 };
         bool fullscreenStateSaved_ = false;
         bool isFullscreen_ = false;
 
-        // ´°¿Ú´óĞ¡ÏŞÖÆ
+        // çª—å£å¤§å°é™åˆ¶
         int minWidth_ = 0;
         int minHeight_ = 0;
         int maxWidth_ = 0;
         int maxHeight_ = 0;
 
-        // Êó±ê¸ú×Ù×´Ì¬
+        // é¼ æ ‡è·Ÿè¸ªçŠ¶æ€
         std::atomic<bool> trackingMouse_{ false };
 
-        // äÖÈ¾Ïà¹Ø³ÉÔ±
+        // æ¸²æŸ“ç›¸å…³æˆå‘˜
         struct DirectBuffer {
             BITMAPINFO bmi = {};
         } directBuffer_;
 
-        // äÖÈ¾ÓÅ»¯Ïà¹Ø
+        // æ¸²æŸ“ä¼˜åŒ–ç›¸å…³
         int lastClientWidth_ = 0;
         int lastClientHeight_ = 0;
         int lastBufferWidth_ = 0;
         int lastBufferHeight_ = 0;
         bool sizeChanged_ = true;
 
-        // »Øµ÷º¯Êı
+        // å›è°ƒå‡½æ•°
         KeyCallback keyCb_;
         MouseCallback mouseCb_;
         ResizeCallback resizeCb_;
@@ -946,16 +946,10 @@ namespace pa2d {
         CloseCallback closeCb_;
         MenuCallback menuCb_;
         FileListCallback dropCb_;
-        FileListCallback clipboardFilesCb_; // ÎÄ¼ş¼ôÌù°å»Øµ÷
+        FileListCallback clipboardFilesCb_; // æ–‡ä»¶å‰ªè´´æ¿å›è°ƒ
 
-        HWND nextClipboardViewer_ = nullptr;  // ¼ôÌù°å²é¿´Æ÷Á´
+        HWND nextClipboardViewer_ = nullptr;  // å‰ªè´´æ¿æŸ¥çœ‹å™¨é“¾
 
         HDC persistentDC_ = nullptr;
     };
 }
-
-#ifdef _DEBUG
-#pragma comment(lib, "pa2dd.lib")
-#else
-#pragma comment(lib, "pa2d.lib")
-#endif
