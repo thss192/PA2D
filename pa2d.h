@@ -183,7 +183,6 @@ namespace pa2d {
 
     class Window {
     public:
-    public:
         // ==================== 常用功能 ====================
         // 构造/析构
         Window(int width, int height, const char* title);
@@ -717,3 +716,4 @@ namespace pa2d {
         return *this;
     }
 }
+
