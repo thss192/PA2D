@@ -6,6 +6,8 @@ English | [简体中文](#pa2d---轻量级-c-2d-图形库)
 
 ## 🎯 Project Overview
 
+**Current Status**: This version is provided as closed-source freeware. We plan to open-source it in future releases.
+
 PA2D is a lightweight 2D graphics programming library designed for modern C++, providing developers with simple yet powerful graphics drawing solutions. It perfectly balances beginner-friendliness and professional development needs, making graphics programming more intuitive and efficient.
 
 ## 📦 Release Contents
@@ -189,6 +191,8 @@ Thanks to all developers who contributed to this project, with special thanks to
 PA2D 是一个专为现代 C++ 设计的轻量级 2D 图形编程库，旨在为开发者提供简单易用且功能强大的图形绘制解决方案。它完美平衡了初学者友好性和专业开发需求，让图形编程变得更加直观和高效。
 
 ## 📦 发布内容
+
+**当前状态**: 当前版本为闭源免费使用，计划在未来版本中开源。
 
 当前版本提供：
 - **头文件** (`pa2d.h`) - 完整的 API 接口
