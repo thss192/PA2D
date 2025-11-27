@@ -1,7 +1,8 @@
+<a id= pa2d---modern-c-2d-graphics-programming-library></a>
+
 # PA2D - Modern C++ 2D Graphics Programming Library
 
 [简体中文](#pa2d---轻量级-c-2d-图形库) | [English](#pa2d---modern-c-2d-graphics-programming-library) 
-<a id= pa2d---modern-c-2d-graphics-programming-library></a>
 
 ## 🎯 Project Overview
 
@@ -178,6 +179,10 @@ This project uses a permissive open source license.
 Thanks to all developers who contributed to this project, with special thanks to EasyX graphics library for inspiration.
 
 <a id= pa2d---轻量级-c-2d-图形库></a>
+
+# PA2D - 轻量级 C++ 图形库
+
+[简体中文](#pa2d---轻量级-c-2d-图形库) | [English](#pa2d---modern-c-2d-graphics-programming-library) 
 
 ## 🎯 项目简介
 
