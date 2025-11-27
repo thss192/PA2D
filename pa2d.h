@@ -7,11 +7,334 @@
 #include <memory>
 #include <future>
 #pragma comment(lib, "gdiplus.lib")
-
 namespace pa2d {
-    /* 宏定义 -- 用于简化多态代码*/
-    namespace {
-#define DECLARE_SHAPE_VIRTUAL_FUNCTIONS(ClassName, PureVirtual) \
+    // ==================== 基础颜色(ARGB) ====================
+    struct Color {
+        union { uint32_t data, argb; struct { uint8_t b, g, r, a; }; struct { uint32_t rgb : 24, _ : 8; }; };
+        Color() :data(0) {} Color(uint32_t argb) :data(argb) {} Color(uint8_t a, uint8_t r, uint8_t g, uint8_t b) :a(a), r(r), g(g), b(b) {}
+        Color(uint8_t alpha, const Color& base) : data((static_cast<uint32_t>(alpha) << 24) | (base.data & 0x00FFFFFF)) {}
+        operator uint32_t() const { return data; }
+    };
+    const Color White = 0xFFFFFFFF, Black = 0xFF000000, None = 0x00000000;
+    const Color Red = 0xFFFF0000, Green = 0xFF00FF00, Blue = 0xFF0000FF;
+    const Color Cyan = 0xFF00FFFF, Magenta = 0xFFFF00FF, Yellow = 0xFFFFFF00;
+    const Color Gray = 0xFF808080, LightGray = 0xFFC0C0C0, DarkGray = 0xFF404040;
+    // ==================== Buffer 位图存储 ====================
+    struct Buffer {
+        Color* color;
+        int width, height;
+        Buffer(int width = 0, int height = 0, const Color& init_color = 0);
+        Buffer(const Buffer& other);Buffer(Buffer&& other) noexcept;
+        ~Buffer();
+        size_t size() const { return static_cast<size_t>(width) * height; }
+        Color& at(int x, int y);
+        const Color& at(int x, int y) const;
+        static void copy(Buffer& dest, const Buffer& src);
+        void resize(int newWidth, int newHeight, const Color& clear_color = 0);
+        void clear(const Color& clear_color = 0);
+        Buffer& operator=(const Buffer& other);
+        Buffer& operator=(Buffer&& other) noexcept;
+        explicit operator bool() const { return color && width > 0 && height > 0;; }
+    };
+    // ==================== Point结构体 ====================
+    struct Point {
+        float x, y;
+        Point(); Point(float x, float y);
+        Point operator+(const Point& other) const; Point& operator+=(const Point& other);
+        Point operator-(const Point& other) const; Point& operator-=(const Point& other);
+        Point operator-() const; bool operator==(const Point& other) const; bool operator!=(const Point& other) const;
+        Point& operator+=(float scalar); Point& operator-=(float scalar);
+        Point& operator*=(float scalar); Point& operator/=(float scalar);
+        friend Point operator+(const Point&, float); friend Point operator+(float, const Point&);
+        friend Point operator-(const Point&, float); friend Point operator-(float, const Point&);
+        friend Point operator*(const Point&, float); friend Point operator*(float, const Point&);
+        friend Point operator/(const Point&, float); friend Point operator/(float, const Point&);
+        // 变换
+        Point& translate(float dx, float dy);
+        Point& scale(float factorX, float factorY); Point& scale(float factor);
+        Point& rotate(float angleDegrees, float centerX = 0, float centerY = 0);
+    };
+    class Points;class Line;class Ray;class Triangle;class Rect;class Polygon;class Circle;class Elliptic;class Sector;struct Style;
+    // ==================== 文字样式系统 ====================
+    enum class TextEncoding { ANSI, UTF8, UTF16, CURRENT };
+    TextEncoding textEncoding(TextEncoding newEncoding = TextEncoding::CURRENT);
+    void setTextAntiAliasing(bool enable);
+    class FontStyle {
+        int styleBits_; float italicAngle_ , rotationAngle_;
+    public:
+        static const FontStyle Regular, Bold,Italic,Underline,Strikeout;
+        FontStyle italicAngle(float angle) const;
+        FontStyle rotation(float angle) const;
+        FontStyle operator|(const FontStyle& other) const;
+        bool operator&(const FontStyle& other) const;
+        bool operator==(const FontStyle& other) const;
+    };
+    // ==================== Canvas 画布系统 ====================
+    class Canvas {
+        Buffer buffer;
+    public:
+        // ==================== 构造和基础访问 ====================
+        Canvas();
+        Canvas(int width, int height, Color background = 0xFFFFFFFF);
+        Canvas(const Buffer& buf); Canvas(Buffer&& buf);
+        Canvas(const Canvas& other); Canvas(Canvas&& other) noexcept;
+        Canvas(const char* filePath); Canvas(int resourceID);
+
+        int width() const; int height() const;
+        Color& at(int x, int y); const Color& at(int x, int y) const;
+        const Buffer& getBuffer() const; Buffer& getBuffer();
+
+        // ==================== 图像操作 ====================
+        bool loadImage(const char* filePath); bool loadImage(int resourceID);
+        Canvas& clear(Color color = 0xFFFFFFFF);
+        Canvas& crop(int x, int y, int width, int height);
+        Canvas& resize(int newWidth, int newHeight, uint32_t clearColor = 0xFFFFFFFF);
+
+        // ==================== 基础图形绘制 ====================
+        Canvas& rect(float x, float y, float width, float height, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
+        Canvas& rect(float centerX, float centerY, float width, float height, float angle, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
+        Canvas& roundRect(float x, float y, float width, float height, const Color& fillColor = 0, const Color& strokeColor = 0, float cornerRadius = 0.0f, float strokeWidth = 1.0f, float opacity = 1.0f);
+        Canvas& roundRect(float centerX, float centerY, float width, float height, float angle, const Color& fillColor = 0, const Color& strokeColor = 0, float cornerRadius = 0.0f, float strokeWidth = 1.0f, float opacity = 1.0f);
+        Canvas& circle(float centerX, float centerY, float radius, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
+        Canvas& ellipse(float cx, float cy, float width, float height, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
+        Canvas& ellipse(float cx, float cy, float width, float height, float angle, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
+        Canvas& triangle(float ax, float ay, float bx, float by, float cx, float cy, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
+        Canvas& sector(float cx, float cy, float radius, float startAngleDeg, float endAngleDeg, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f, bool drawArc = true, bool drawRadialEdges = true);
+        Canvas& line(float x0, float y0, float x1, float y1, const Color& color, float lineWidth = 1.0f);
+        Canvas& polyline(const std::vector<Point>& points, const Color& color, float lineWidth = 1.0f, bool closed = false);
+        Canvas& polygon(const std::vector<Point>& vertices, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
+
+        // ==================== 面向对象图形绘制 ====================
+        Canvas& draw(const Points&, const Style&);
+        Canvas& draw(const Line&, const Style&);
+        Canvas& draw(const Ray&, const Style&);
+        Canvas& draw(const Rect&, const Style&);
+        Canvas& draw(const Triangle&, const Style&);
+        Canvas& draw(const Polygon&, const Style&);
+        Canvas& draw(const Circle&, const Style&);
+        Canvas& draw(const Elliptic&, const Style&);
+        Canvas& draw(const Sector&, const Style&);
+
+        template<typename GeometryType> Canvas& drawBatch(const std::vector<GeometryType>& geometries, const Style& style);
+        template<typename GeometryType> Canvas& drawBatch(const std::vector<GeometryType>& geometries, const std::vector<Style>& styles);
+
+        // ==================== 图像混合 ====================
+        Canvas& alphaBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
+        Canvas& addBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
+        Canvas& multiplyBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
+        Canvas& screenBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
+        Canvas& overlayBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
+        Canvas& destAlphaBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
+        Canvas& copyBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
+
+        // ==================== 图像变换绘制 ====================
+        Canvas& draw(const Canvas& other, int x = 0, int y = 0, int alpha = 255);
+        Canvas& drawRotated(const Canvas& src, float centerX, float centerY, float rotation = 0.0f);
+        Canvas& drawScaled(const Canvas& src, float centerX, float centerY, float scaleX, float scaleY);
+        Canvas& drawScaled(const Canvas& src, float centerX, float centerY, float scale = 1.0f);
+        Canvas& drawScaledRotated(const Canvas& src, float centerX, float centerY, float scale = 1.0f, float rotation = 0.0f);
+
+        // ==================== 图像变换副本 ====================
+        Canvas createCropped(int x, int y, int width, int height) const;
+        Canvas createScaled(float scaleX, float scaleY) const;
+        Canvas createRotated(float rotation) const;
+        Canvas createScaledRotated(float scale = 1.0f, float rotation = 0.0f) const;
+
+        // ==================== 文本绘制 ====================
+        Canvas& text(const std::wstring& text, int x, int y, const Color& color = 0xFF000000, int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
+        Canvas& textCentered(const std::wstring& text, int centerX, int centerY, const Color& color = 0xFF000000, int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
+        Canvas& textInRect(const std::wstring& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = 0xFF000000, int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
+        Canvas& textFitRect(const std::wstring& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = 0xFF000000, int preferredFontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
+
+        Canvas& text(const std::string& text, int x, int y, const Color& color = 0xFF000000, int fontSize = 16, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
+        Canvas& textCentered(const std::string& text, int centerX, int centerY, const Color& color = 0xFF000000, int fontSize = 16, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
+        Canvas& textInRect(const std::string& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = 0xFF000000, int fontSize = 16, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
+        Canvas& textFitRect(const std::string& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = 0xFF000000, int preferredFontSize = 16, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
+    };
+    // ==================== 窗口系统 ====================
+    struct KeyEvent {
+        int keyCode;
+        bool pressed;
+    };
+    struct MouseEvent {
+        int x, y;
+        int button;       // 0=左键, 1=右键, 2=中键, -1=滚轮, -2=移动, -3=离开
+        bool pressed;     // 对于按键按下/释放
+        int wheelDelta;  // 滚轮增量
+    };
+    // 事件回调类型定义
+    using KeyCallback = std::function<void(const KeyEvent&)>;
+    using MouseCallback = std::function<void(const MouseEvent&)>;
+    using ResizeCallback = std::function<void(int, int)>;
+    using CharCallback = std::function<void(wchar_t)>;
+    using FocusCallback = std::function<void(bool)>;
+    using CloseCallback = std::function<bool()>;
+    using MenuCallback = std::function<void(int)>;
+    using FileListCallback = std::function<void(const std::vector<std::string>&)>;
+
+    class Window {
+    public:
+        // 构造/析构
+        Window(int width, int height, const char* title);
+        ~Window();
+
+        // 禁止拷贝
+        Window(const Window&) = delete;
+        Window& operator=(const Window&) = delete;
+
+        // 公开成员变量（保持简单访问）
+        HWND hwnd_ = nullptr;
+        int width_ = 0;
+        int height_ = 0;
+        bool shouldClose_ = false;
+
+        // 链式回调设置
+        Window& onKey(KeyCallback cb);
+        Window& onMouse(MouseCallback cb);
+        Window& onResize(ResizeCallback cb);
+        Window& onChar(CharCallback cb);
+        Window& onFocus(FocusCallback cb);
+        Window& onClose(CloseCallback cb);
+        Window& onMenu(MenuCallback cb);
+        Window& onFileDrop(FileListCallback cb);
+        Window& onClipboardFiles(FileListCallback cb);
+        Window& disableClipboardFiles();
+
+        // 窗口状态查询
+        bool isOpen() const { return !shouldClose_; }
+        bool isMaximized() const { return hwnd_ && IsZoomed(hwnd_); }
+        bool isMinimized() const { return hwnd_ && IsIconic(hwnd_); }
+        bool isVisible() const { return hwnd_ && IsWindowVisible(hwnd_); }
+        bool isFullscreen() const { return isFullscreen_; }
+
+        // 窗口操作
+        Window& close();
+        Window& show();
+        Window& hide();
+        Window& maximize();
+        Window& minimize();
+        Window& restore();
+        Window& setVisible(bool visible);
+        Window& focus();
+        Window& flash(bool flashTitleBar = true);
+
+        // 窗口大小和位置
+        Window& setPosition(int x, int y);
+        Window& setClientSize(int width, int height);
+        Window& setWindowSize(int width, int height);
+        void getPosition(int& x, int& y) const;
+        void getClientSize(int& width, int& height) const;
+        void getWindowSize(int& width, int& height) const;
+
+        // 窗口样式控制
+        Window& setResizable(bool resizable);
+        Window& setAlwaysOnTop(bool onTop);
+        Window& setBorderless(bool borderless);
+        Window& setFullscreen(bool fullscreen);
+        Window& setMinSize(int minWidth, int minHeight);
+        Window& setMaxSize(int maxWidth, int maxHeight);
+        Window& setMinimizeButton(bool show);
+        Window& setMaximizeButton(bool show);
+        Window& setCloseButton(bool show);
+
+        // 标题设置
+        Window& setTitle(const char* title);
+        Window& setTitle(const wchar_t* title);
+        std::string getTitle() const;
+
+        // 光标控制
+        Window& setCursor(HCURSOR cursor);
+        Window& setCursorDefault();
+        Window& setCursorWait();
+        Window& setCursorCross();
+        Window& setCursorHand();
+        Window& setCursorText();
+        Window& setCursorVisibility(bool visible);
+        Window& setCursorPosition(int x, int y);
+
+        // 图标设置
+        Window& setIcon(HICON icon);
+        Window& setIconFromResource(int resourceId);
+
+        // 菜单功能
+        Window& setMenu(HMENU menu);
+        HMENU createMenu();
+        HMENU createPopupMenu();
+        Window& appendMenuItem(HMENU menu, const char* text, int id, bool enabled = true);
+        Window& appendMenuSeparator(HMENU menu);
+        Window& appendMenuPopup(HMENU menu, const char* text, HMENU popupMenu);
+        Window& destroyMenu(HMENU menu);
+
+        // 鼠标状态
+        std::pair<int, int> getMousePosition() const;
+        bool isMouseInWindow() const;
+        bool isMouseButtonPressed(int button) const;
+        Window& setMouseCapture(bool capture);
+        static std::pair<int, int> getGlobalMousePosition();
+
+        // 键盘状态
+        bool isKeyPressed(int vkCode) const;
+        bool isShiftPressed() const;
+        bool isCtrlPressed() const;
+        bool isAltPressed() const;
+
+        // 剪贴板操作
+        bool setClipboardText(const std::string& text);
+        std::string getClipboardText();
+        bool setClipboardText(const std::wstring& text);
+        std::wstring getClipboardTextW();
+        bool hasClipboardText() const;
+        std::vector<std::string> getClipboardFiles();
+        bool hasClipboardFiles() const;
+
+        // 文件拖放
+        Window& enableFileDrop(bool enable = true);
+
+        // 渲染功能
+        void render(const Buffer& buffer, int destX = 0, int destY = 0, int srcX = 0, int srcY = 0, int width = -1, int height = -1, bool clearBackground = true, COLORREF bgColor = 0);
+        void renderCentered(const Buffer& buffer, bool clearBackground = true, COLORREF bgColor = 0);
+        void render(const Canvas& canvas, int destX = 0, int destY = 0, int srcX = 0, int srcY = 0, int width = -1, int height = -1, bool clearBackground = true, COLORREF bgColor = 0);
+        void renderCentered(const Canvas& canvas, bool clearBackground = true, COLORREF bgColor = 0);
+
+        // 系统信息
+        static std::pair<int, int> getScreenSize();
+        static std::pair<int, int> getWorkAreaSize();
+        static double getDpiScale();
+   private:
+       std::thread messageThread_; std::atomic<bool> running_{ false }; DWORD threadId_ = 0; std::promise<bool> initPromise_;
+       LONG borderlessOriginalStyle_ = 0; LONG borderlessOriginalExStyle_ = 0; int borderlessOriginalClientWidth_ = 0; int borderlessOriginalClientHeight_ = 0; bool borderlessStateSaved_ = false; bool isBorderless_ = false;
+       LONG fullscreenOriginalStyle_ = 0; LONG fullscreenOriginalExStyle_ = 0; RECT fullscreenOriginalRect_ = { 0 }; bool fullscreenStateSaved_ = false; bool isFullscreen_ = false;
+       int minWidth_ = 0; int minHeight_ = 0; int maxWidth_ = 0; int maxHeight_ = 0; std::atomic<bool> trackingMouse_{ false };
+       struct DirectBuffer { BITMAPINFO bmi = {}; } directBuffer_;
+       int lastClientWidth_ = 0; int lastClientHeight_ = 0; int lastBufferWidth_ = 0; int lastBufferHeight_ = 0; bool sizeChanged_ = true;
+       KeyCallback keyCb_; MouseCallback mouseCb_; ResizeCallback resizeCb_; CharCallback charCb_; FocusCallback focusCb_; CloseCallback closeCb_; MenuCallback menuCb_; FileListCallback dropCb_; FileListCallback clipboardFilesCb_;
+       HWND nextClipboardViewer_ = nullptr; HDC persistentDC_ = nullptr;
+    };
+    // ==================== 几何样式 ====================
+    struct Style {
+        Style(Color fill = 0, Color stroke = 0, float width = 1.0f, float radius = 0.0f,
+            float opacity = 1.0f, bool drawArc = true, bool drawRadialEdges = true);
+        Color fill_;          Style& fill(Color v);
+        Color stroke_;        Style& stroke(Color v);
+        float width_;         Style& width(float v);
+        float opacity_;       Style& opacity(float v);
+        float radius_;        Style& radius(float v);
+        bool drawArc_;        Style& drawArc(bool v);
+        bool drawRadialEdges_; Style& drawRadialEdges(bool v);
+    };
+    // ==================== 几何对象 ====================
+    struct BoundingBox {
+        float x, y;
+        float width, height;
+        BoundingBox(float x = 0, float y = 0, float width = 0, float height = 0);
+        float left() const;
+        float right() const;
+        float bottom() const;
+        float top() const;
+        Point center() const;
+        bool contains(float px, float py) const;
+    };
+#define SHAPE_API(ClassName, PureVirtual) \
     virtual ClassName& translate(float dx, float dy) PureVirtual; \
     virtual ClassName& translate(Point delta) PureVirtual; \
     virtual ClassName& scale(float factor) PureVirtual; \
@@ -25,53 +348,10 @@ namespace pa2d {
     virtual bool contains(Point point) const PureVirtual; \
     virtual BoundingBox getBoundingBox() const PureVirtual; \
     virtual Point getCenter() const PureVirtual
-
-#define DECLARE_POINT_CONVERSIONS() \
+#define TO_POINTS() \
     operator std::vector<Point>()&; \
     operator std::vector<Point>() const&; \
     operator std::vector<Point>()&&
-    }
-    // ==================== 基础数学类型 ====================
-    struct Point {
-        float x, y;
-        Point();
-        Point(float x, float y);
-        Point operator+(const Point& other) const;
-        Point operator-(const Point& other) const;
-        Point& operator+=(const Point& other);
-        Point& operator-=(const Point& other);
-        Point operator-() const;
-        bool operator==(const Point& other) const;
-        bool operator!=(const Point& other) const;
-        Point& operator+=(float scalar);
-        Point& operator-=(float scalar);
-        Point& operator*=(float scalar);
-        Point& operator/=(float scalar);
-        friend Point operator+(const Point& point, float scalar);
-        friend Point operator+(float scalar, const Point& point);
-        friend Point operator-(const Point& point, float scalar);
-        friend Point operator-(float scalar, const Point& point);
-        friend Point operator*(const Point& point, float scalar);
-        friend Point operator*(float scalar, const Point& point);
-        friend Point operator/(const Point& point, float scalar);
-        friend Point operator/(float scalar, const Point& point);
-        Point& translate(float dx, float dy);
-        Point& scale(float factor);
-        Point& scale(float factorX, float factorY);
-        Point& rotate(float angleDegrees, float centerX = 0, float centerY = 0);
-    };
-    struct BoundingBox {
-        float x, y;
-        float width, height;
-        BoundingBox(float x = 0, float y = 0, float width = 0, float height = 0);
-        float left() const;
-        float right() const;
-        float bottom() const;
-        float top() const;
-        Point center() const;
-        bool contains(float px, float py) const;
-    };
-    // ==================== 图形基类 ====================
     class Shape {
     public:
         enum class GeometryType {
@@ -87,31 +367,26 @@ namespace pa2d {
         };
         virtual ~Shape() = default;
         GeometryType getType() const { return type; }
-        DECLARE_SHAPE_VIRTUAL_FUNCTIONS(Shape, = 0);
+        SHAPE_API(Shape, = 0);
     private:
         GeometryType type = GeometryType::POINTS;
     };
-    // ==================== 图形对象 ====================
     class Points : public Shape, public std::vector<Point> {
     public:
         Points();
         Points(int size);
         Points(const std::vector<Point>& points);
         Points(std::vector<Point>&& points);
-
         Points& operator=(const std::vector<Point>& points);
         Points& operator=(std::vector<Point>&& points);
-
-        DECLARE_SHAPE_VIRTUAL_FUNCTIONS(Points, override);
+        SHAPE_API(Points, override);
     };
-
     class Line : public Shape {
         Points points_;
     public:
         Line();
         Line(float x0, float y0, float x1, float y1);
         Line(const Point& start, const Point& end);
-
         Line& start(float x, float y);
         Line& start(const Point& start);
         Line& end(float x, float y);
@@ -120,31 +395,24 @@ namespace pa2d {
         Point& end();
         const Point& start() const;
         const Point& end() const;
-
-        DECLARE_SHAPE_VIRTUAL_FUNCTIONS(Line, override);
-        DECLARE_POINT_CONVERSIONS();
+        SHAPE_API(Line, override);
+        TO_POINTS();
     };
-
     class Polygon : public Shape {
     private:
         Points points_;
         static bool is_point_in_polygon_odd_even(const Point& P, const Points& vertices);
-
     public:
         Polygon();
         Polygon(const std::vector<Point>& points);
         Polygon(std::vector<Point>&& points);
-
         Points& getPoints();
         const Points& getPoints() const;
-
         Polygon& operator=(const std::vector<Point>& vec);
         Polygon& operator=(std::vector<Point>&& points);
-
-        DECLARE_SHAPE_VIRTUAL_FUNCTIONS(Polygon, override);
-        DECLARE_POINT_CONVERSIONS();
+        SHAPE_API(Polygon, override);
+        TO_POINTS();
     };
-
     class Rect : public Shape {
         Points points_;
         Point center_{ 0, 0 };
@@ -156,7 +424,6 @@ namespace pa2d {
         Rect();
         Rect(float centerX, float centerY, float width, float height, float rotation = 0.0f);
         Rect(const std::vector<Point>& points);
-
         Rect& center(const Point& center);
         Rect& center(float x, float y);
         Rect& width(float width);
@@ -167,20 +434,16 @@ namespace pa2d {
         float width() const;
         float height() const;
         float rotation() const;
-
         auto begin();
         auto end();
         auto begin() const;
         auto end() const;
-
         Rect& operator=(const std::vector<Point>& points);
         Point& operator[](size_t index);
         const Point& operator[](size_t index) const;
-
-        DECLARE_SHAPE_VIRTUAL_FUNCTIONS(Rect, override);
-        DECLARE_POINT_CONVERSIONS();
+        SHAPE_API(Rect, override);
+        TO_POINTS();
     };
-
     class Triangle : public Shape {
         Points points_;
     public:
@@ -188,20 +451,16 @@ namespace pa2d {
         Triangle(const Point& p0, const Point& p1, const Point& p2);
         Triangle(float px0, float py0, float px1, float py1, float px2, float py2);
         Triangle(const std::vector<Point>& points);
-
         auto begin();
         auto end();
         auto begin() const;
         auto end() const;
-
         Triangle& operator=(const std::vector<Point>& points);
         Point& operator[](size_t index);
         const Point& operator[](size_t index) const;
-
-        DECLARE_SHAPE_VIRTUAL_FUNCTIONS(Triangle, override);
-        DECLARE_POINT_CONVERSIONS();
+        SHAPE_API(Triangle, override);
+        TO_POINTS();
     };
-
     class Elliptic : public Shape {
         Point center_;
         float width_;
@@ -225,13 +484,11 @@ namespace pa2d {
         float width() const;
         float height() const;
         float rotation() const;
-
-        DECLARE_SHAPE_VIRTUAL_FUNCTIONS(Elliptic, override);
-        DECLARE_POINT_CONVERSIONS();
+        SHAPE_API(Elliptic, override);
+        TO_POINTS();
         operator Point()&;
         operator Point() const&;
     };
-
     class Circle : public Shape {
         Point center_;
         float radius_;
@@ -239,7 +496,6 @@ namespace pa2d {
         Circle();
         Circle(float centerX, float centerY, float radius);
         Circle(const Point& center, float radius);
-
         Circle& x(float x);
         Circle& y(float y);
         Circle& center(const Point& center);
@@ -250,13 +506,11 @@ namespace pa2d {
         Point center() const;
         Point& center();
         float radius() const;
-
-        DECLARE_SHAPE_VIRTUAL_FUNCTIONS(Circle, override);
-        DECLARE_POINT_CONVERSIONS();
+        SHAPE_API(Circle, override);
+        TO_POINTS();
         operator Point()&;
         operator Point() const&;
     };
-
     class Sector : public Shape {
         Point center_;
         float radius_;
@@ -266,7 +520,6 @@ namespace pa2d {
         Sector();
         Sector(Point center, float radius, float startAngle = 0.0f, float endAngle = 360.0f);
         Sector(float centerX, float centerY, float radius, float startAngle = 0.0f, float endAngle = 360.0f);
-
         Sector& x(float x);
         Sector& y(float y);
         Sector& center(const Point& center);
@@ -281,13 +534,11 @@ namespace pa2d {
         float radius() const;
         float startAngle() const;
         float endAngle() const;
-
-        DECLARE_SHAPE_VIRTUAL_FUNCTIONS(Sector, override);
-        DECLARE_POINT_CONVERSIONS();
+        SHAPE_API(Sector, override);
+        TO_POINTS();
         operator Point()&;
         operator Point() const&;
     };
-
     class Ray : public Shape {
         Points points_;
         float length_ = 0.0f;
@@ -297,7 +548,6 @@ namespace pa2d {
         Ray(float x1, float y1, float x2, float y2);
         Ray(const Point& start, const Point& end);
         Ray(const Point& start, float length = 0.0f, float angle = 0.0f);
-
         Ray& start(float x, float y);
         Ray& start(const Point& start);
         Ray& end(float x, float y);
@@ -306,7 +556,6 @@ namespace pa2d {
         Point& end();
         const Point& start() const;
         const Point& end() const;
-
         Ray& angle(float angle);
         Ray& length(float length);
         float length() const;
@@ -314,11 +563,12 @@ namespace pa2d {
         Ray& toEnd();
         Ray& stretch(float factor);
         Ray& spin(float degrees);
-
-        DECLARE_SHAPE_VIRTUAL_FUNCTIONS(Ray, override);
-        DECLARE_POINT_CONVERSIONS();
+        SHAPE_API(Ray, override);
+        TO_POINTS();
     };
-
+#undef SHAPE_API
+#undef TO_POINTS
+    // ==================== 路径构造方法 ====================
     class Path {
     private:
         class Builder {
@@ -329,7 +579,6 @@ namespace pa2d {
             Builder& operator=(const Builder&) = delete;
             Builder(Builder&&) = default;
             Builder& operator=(Builder&&) = default;
-
             Builder& move(float dx, float dy);
             Builder& moveTo(float x, float y);
             Builder& translate(float dx, float dy);
@@ -340,11 +589,9 @@ namespace pa2d {
             Builder& rotate(float angleDegrees);
             Builder& rotate(float angleDegrees, float centerX, float centerY);
             Builder& rotateOnSelf(float angleDegrees);
-
             operator std::vector<Point>()&&;
             operator std::vector<Point>()&;
             operator std::vector<Point>() const& = delete;
-
             template<typename T>
             operator T()&&;
             template<typename T>
@@ -352,71 +599,13 @@ namespace pa2d {
             template<typename T>
             operator T() const& = delete;
         };
-
         Path() = delete;
         ~Path() = delete;
         Path(const Path&) = delete;
         Path& operator=(const Path&) = delete;
-
     public:
         static Builder from(float x, float y);
         static Builder from(const Point& start);
-    };
-    // ==================== 颜色系统 ====================
-    struct Color {
-        union { uint32_t data, argb; struct { uint8_t b, g, r, a; }; struct { uint32_t rgb : 24, _ : 8; }; };
-        Color() :data(0) {} Color(uint32_t argb) :data(argb) {} Color(uint8_t a, uint8_t r, uint8_t g, uint8_t b) :a(a), r(r), g(g), b(b) {}
-        Color(uint8_t alpha, const Color& base) : data((static_cast<uint32_t>(alpha) << 24) | (base.data & 0x00FFFFFF)) {}
-        operator uint32_t() const { return data; }
-    };
-    // 基础颜色
-    namespace {
-        const Color Red = 0xFFFF0000;
-        const Color Green = 0xFF00FF00;
-        const Color Blue = 0xFF0000FF;
-        const Color White = 0xFFFFFFFF;
-        const Color Black = 0xFF000000;
-        const Color Yellow = 0xFFFFFF00;
-        const Color Cyan = 0xFF00FFFF;
-        const Color Magenta = 0xFFFF00FF;
-        const Color Gray = 0xFF808080;
-        const Color LightGray = 0xFFC0C0C0;
-        const Color DarkGray = 0xFF404040;
-        const Color Orange = 0xFFFFA500;
-        const Color Pink = 0xFFFFC0CB;
-        const Color Purple = 0xFF800080;
-        const Color Brown = 0xFFA52A2A;
-        const Color None = 0x00000000;
-        const Color DarkBlue = 0xFF000080;
-        const Color DarkGreen = 0xFF006400;
-        const Color DarkRed = 0xFF8B0000;
-        const Color LightBlue = 0xFFADD8E6;
-        const Color LightGreen = 0xFF90EE90;
-    }
-    // ==================== 位图存储 ====================
-    struct Buffer {
-        Color* color;
-        int width, height;
-
-        explicit Buffer(int width = 0, int height = 0, const Color& init_color = 0x0);
-        Buffer(const Buffer& other);
-        Buffer(Buffer&& other) noexcept;
-        Buffer& operator=(const Buffer& other);
-        Buffer& operator=(Buffer&& other) noexcept;
-        ~Buffer();
-
-        size_t size() const { return static_cast<size_t>(width) * height; }
-        bool isValid() const { return color && width > 0 && height > 0; }
-        Color& at(int x, int y);
-        const Color& at(int x, int y) const;
-        Color* getRow(int y);
-        const Color* getRow(int y) const;
-
-        static void copy(Buffer& dest, const Buffer& src);
-        void resize(int newWidth, int newHeight, const Color& clear_color = 0x0);
-        void clear(const Color& clear_color = 0x0);
-
-        explicit operator bool() const { return isValid(); }
     };
     // ==================== 渲染算法 ====================
     // 图像加载
@@ -454,32 +643,6 @@ namespace pa2d {
     void drawEllipse(Buffer& buffer, float cx, float cy, float width, float height, float angle, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
     void drawSector(Buffer& buffer, float cx, float cy, float radius, float startAngleDeg, float endAngleDeg, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f, bool drawArc = true, bool drawRadialEdges = true);
     void drawPolygon(Buffer& buffer, const std::vector<Point>& vertices, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
-    // 文字渲染
-    /* --------- 文字编码设置 start --------*/
-    enum class TextEncoding { ANSI, UTF8, UTF16, CURRENT };
-    TextEncoding textEncoding(TextEncoding newEncoding = TextEncoding::CURRENT);
-    /* --------- 文字编码设置  end  --------*/
-    void setTextAntiAliasing(bool enable);
-    // 文字样式结构体
-    class FontStyle {
-    private:
-        int m_styleBits = 0;
-        float m_italicAngle = 0.0f;
-        float m_rotationAngle = 0.0f;
-    public:
-        static const FontStyle Regular;
-        static const FontStyle Bold;
-        static const FontStyle Italic;
-        static const FontStyle Underline;
-        static const FontStyle Strikeout;
-
-        FontStyle italicAngle(float angle) const;
-        FontStyle rotation(float angle) const;
-
-        FontStyle operator|(const FontStyle& other) const;
-        bool operator&(const FontStyle& other) const;
-        bool operator==(const FontStyle& other) const;
-    };
     // 文字测量函数
     bool measureText(const std::wstring& text, int fontSize, const std::wstring& fontName, const FontStyle& style, int& width, int& height);
     bool measureText(const std::string& text, int fontSize, const std::string& fontName, const FontStyle& style, int& width, int& height);
@@ -495,29 +658,14 @@ namespace pa2d {
     void drawTextInRect(Buffer& buffer, const std::wstring& text, float rectX, float rectY, float rectWidth, float rectHeight, const Color& color = Color(255, 255, 255, 255), int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
     void drawTextFitRect(Buffer& buffer, const std::wstring& text, float rectX, float rectY, float rectWidth, float rectHeight, const Color& color = Color(255, 255, 255, 255), int preferredFontSize = 12, const std::wstring& fontName = L"Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
     void drawTextCentered(Buffer& buffer, const std::wstring& text, float centerX, float centerY, const Color& color = Color(255, 255, 255, 255), int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
-    // ==================== 图形样式 ====================
-    struct Style {
-        Color fillColor_;
-        Color strokeColor_;
-        float strokeWidth_;
-        float opacity_;
-        float radius_;
-        bool drawArc_;
-        bool drawRadialEdges_;
 
-        Style(Color fill = 0, Color stroke = 0, float width = 1.0f, float radius = 0.0f, float opacity = 1.0f, bool drawArc = true, bool drawRadialEdges = true);
-
-        Style& fill(Color v);
-        Style& stroke(Color v);
-        Style& width(float v);
-        Style& opacity(float v);
-        Style& radius(float v);
-        Style& drawArc(bool v);
-        Style& drawRadialEdges(bool v);
-        Style& fill(uint32_t v);
-        Style& stroke(uint32_t v);
+    // ==================== Style 字面量扩展 ====================
+    struct StyleBuilder;
+    struct TagBase {
+        virtual ~TagBase() = default;
+        virtual void applyTo(Style& style) const = 0;
+        virtual std::unique_ptr<TagBase> clone() const = 0;
     };
-    struct TagBase;
     struct StyleBuilder {
         std::vector<std::unique_ptr<TagBase>> tags;
         StyleBuilder();
@@ -525,75 +673,25 @@ namespace pa2d {
         StyleBuilder& operator=(const StyleBuilder& other);
         operator Style() const;
     };
-
-    struct TagBase {
-        virtual ~TagBase() = default;
-        virtual void applyTo(Style& style) const = 0;
-        virtual std::unique_ptr<TagBase> clone() const = 0;
+#define TAG(Name, Type, Member) \
+    struct Name##Tag : public TagBase { \
+        Type Member; \
+        Name##Tag(Type val) : Member(val) {} \
+        void applyTo(Style& style) const override; \
+        std::unique_ptr<TagBase> clone() const override; \
+        operator StyleBuilder() const; \
     };
-
-    struct FillTag : public TagBase {
-        uint32_t argb;
-        FillTag(uint32_t val) : argb(val) {}
-        void applyTo(Style& style) const override;
-        std::unique_ptr<TagBase> clone() const override;
-        operator StyleBuilder() const;
-    };
-
-    struct StrokeTag : public TagBase {
-        uint32_t argb;
-        StrokeTag(uint32_t val) : argb(val) {}
-        void applyTo(Style& style) const override;
-        std::unique_ptr<TagBase> clone() const override;
-        operator StyleBuilder() const;
-    };
-
-    struct WidthTag : public TagBase {
-        float value;
-        WidthTag(float val) : value(val) {}
-        void applyTo(Style& style) const override;
-        std::unique_ptr<TagBase> clone() const override;
-        operator StyleBuilder() const;
-    };
-
-    struct RadiusTag : public TagBase {
-        float value;
-        RadiusTag(float val) : value(val) {}
-        void applyTo(Style& style) const override;
-        std::unique_ptr<TagBase> clone() const override;
-        operator StyleBuilder() const;
-    };
-
-    struct OpacityTag : public TagBase {
-        float value;
-        OpacityTag(float val) : value(val) {}
-        void applyTo(Style& style) const override;
-        std::unique_ptr<TagBase> clone() const override;
-        operator StyleBuilder() const;
-    };
-
-    struct DrawArcTag : public TagBase {
-        bool value;
-        DrawArcTag(bool val) : value(val) {}
-        void applyTo(Style& style) const override;
-        std::unique_ptr<TagBase> clone() const override;
-        operator StyleBuilder() const;
-    };
-
-    struct DrawRadialEdgesTag : public TagBase {
-        bool value;
-        DrawRadialEdgesTag(bool val) : value(val) {}
-        void applyTo(Style& style) const override;
-        std::unique_ptr<TagBase> clone() const override;
-        operator StyleBuilder() const;
-    };
-
-    // 字面量开关宏
+    TAG(Fill, uint32_t, argb)      // 填充颜色
+    TAG(Stroke, uint32_t, argb)    // 描边颜色
+    TAG(Width, float, value)       // 线宽
+    TAG(Radius, float, value)      // 圆角半径
+    TAG(Opacity, float, value)     // 不透明度
+    TAG(DrawArc, bool, value)      // 是否绘制弧线
+    TAG(DrawRadialEdges, bool, value) // 是否绘制径向边
+#undef TAG
+     // 字面量开关宏
 #ifndef PA2D_DISABLE_LITERALS
-    namespace detail {
-        uint32_t parseColorString(const char* str, size_t len);
-    }
-    // 数字字面量操作符
+    namespace detail {uint32_t parseColorString(const char* str, size_t len);}
     inline FillTag operator"" _fill(unsigned long long hex) { return FillTag(static_cast<uint32_t>(hex)); }
     inline StrokeTag operator"" _stroke(unsigned long long hex) { return StrokeTag(static_cast<uint32_t>(hex)); }
     inline WidthTag operator"" _w(long double w) { return WidthTag(static_cast<float>(w)); }
@@ -601,353 +699,23 @@ namespace pa2d {
     inline RadiusTag operator"" _r(long double r) { return RadiusTag(static_cast<float>(r)); }
     inline RadiusTag operator"" _r(unsigned long long r) { return RadiusTag(static_cast<float>(r)); }
     inline OpacityTag operator"" _o(long double o) { return OpacityTag(static_cast<float>(o)); }
-
-    // 字符串字面量操作符
     inline FillTag operator"" _fill(const char* str, size_t len) { return FillTag(detail::parseColorString(str, len)); }
     inline StrokeTag operator"" _stroke(const char* str, size_t len) { return StrokeTag(detail::parseColorString(str, len)); }
 #endif // PA2D_DISABLE_LITERALS
-
-    // 常量定义
     extern const DrawArcTag draw_arc;
     extern const DrawArcTag no_arc;
     extern const DrawRadialEdgesTag draw_edges;
     extern const DrawRadialEdgesTag no_edges;
-
     StyleBuilder operator+(const StyleBuilder& builder, const TagBase& newTag);
-    // ==================== 渲染系统 ====================
-    class Canvas {
-        Buffer buffer;
-    public:
-        // 构造函数
-        Canvas();
-        Canvas(int width, int height, Color background = 0xFFFFFFFF);
-        Canvas(const Buffer& buf);
-        Canvas(Buffer&& buf);
-        Canvas(const Canvas& other);
-        Canvas(Canvas&& other) noexcept;
-        Canvas(const char* filePath);
-        Canvas(int resourceID);
 
-        // 基础属性访问
-        int width() const;
-        int height() const;
-        bool isValid() const;
-        const Buffer& getBuffer() const;
-        Buffer& getBuffer();
-
-        // 像素访问
-        Color& at(int x, int y);
-        const Color& at(int x, int y) const;
-
-        // 图像操作
-        bool loadImage(const char* filePath);
-        bool loadImage(int resourceID);
-        Canvas& clear(Color color = 0xFFFFFFFF);
-        Canvas& crop(int x, int y, int width, int height);
-        Canvas& resize(int newWidth, int newHeight, uint32_t clearColor = 0xFFFFFFFF);
-
-        // 混合操作
-        Canvas& alphaBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
-        Canvas& addBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
-        Canvas& multiplyBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
-        Canvas& screenBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
-        Canvas& overlayBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
-        Canvas& destAlphaBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
-        Canvas& copyBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
-
-        // 变换操作
-        Canvas& draw(const Canvas& other, int x = 0, int y = 0, int alpha = 255);
-        Canvas& drawRotated(const Canvas& src, float centerX, float centerY, float rotation = 0.0f);
-        Canvas& drawScaled(const Canvas& src, float centerX, float centerY, float scaleX, float scaleY);
-        Canvas& drawScaled(const Canvas& src, float centerX, float centerY, float scale = 1.0f);
-        Canvas& drawScaledRotated(const Canvas& src, float centerX, float centerY, float scale = 1.0f, float rotation = 0.0f);
-
-        // 创建变换后的副本
-        Canvas createCropped(int x, int y, int width, int height) const;
-        Canvas createScaled(float scaleX, float scaleY) const;
-        Canvas createRotated(float rotation) const;
-        Canvas createScaledRotated(float scale = 1.0f, float rotation = 0.0f) const;
-
-        // 基础绘制方法
-        Canvas& rect(float x, float y, float width, float height, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
-        Canvas& rect(float centerX, float centerY, float width, float height, float angle, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
-        Canvas& roundRect(float x, float y, float width, float height, const Color& fillColor = 0, const Color& strokeColor = 0, float cornerRadius = 0.0f, float strokeWidth = 1.0f, float opacity = 1.0f);
-        Canvas& roundRect(float centerX, float centerY, float width, float height, float angle, const Color& fillColor = 0, const Color& strokeColor = 0, float cornerRadius = 0.0f, float strokeWidth = 1.0f, float opacity = 1.0f);
-        Canvas& circle(float centerX, float centerY, float radius, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
-        Canvas& ellipse(float cx, float cy, float width, float height, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
-        Canvas& ellipse(float cx, float cy, float width, float height, float angle, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
-        Canvas& triangle(float ax, float ay, float bx, float by, float cx, float cy, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
-        Canvas& sector(float cx, float cy, float radius, float startAngleDeg, float endAngleDeg, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f, bool drawArc = true, bool drawRadialEdges = true);
-        Canvas& line(float x0, float y0, float x1, float y1, const Color& color, float lineWidth = 1.0f);
-        Canvas& polyline(const std::vector<Point>& points, const Color& color, float lineWidth = 1.0f, bool closed = false);
-        Canvas& polygon(const std::vector<Point>& vertices, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
-
-        // 智能绘制函数
-        Canvas& draw(const Line& line, const Style& style);
-        Canvas& draw(const Ray& ray, const Style& style);
-        Canvas& draw(const Triangle& triangle, const Style& style);
-        Canvas& draw(const Rect& rect, const Style& style);
-        Canvas& draw(const Circle& circle, const Style& style);
-        Canvas& draw(const Elliptic& ellipse, const Style& style);
-        Canvas& draw(const Sector& sector, const Style& style);
-        Canvas& draw(const Points& points, const Style& style);
-        Canvas& draw(const Polygon& polygon, const Style& style);
-
-        // 批量绘制
-        template<typename GeometryType>
-        Canvas& drawBatch(const std::vector<GeometryType>& geometries, const Style& style) {
-            for (const auto& geometry : geometries)draw(geometry, style);
-            return *this;
-        }
-
-        template<typename GeometryType>
-        Canvas& drawBatch(const std::vector<GeometryType>& geometries, const std::vector<Style>& styles) {
-            for (size_t i = 0; i < geometries.size(); ++i) {
-                const Style& style = (i < styles.size()) ? styles[i] :
-                    (!styles.empty()) ? styles.back() : Style();
-                draw(geometries[i], style);
-            }
-            return *this;
-        }
-
-        // 文本绘制方法
-        Canvas& text(const std::wstring& text, int x, int y, const Color& color = 0xFF000000, int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
-        Canvas& textCentered(const std::wstring& text, int centerX, int centerY, const Color& color = 0xFF000000, int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
-        Canvas& textInRect(const std::wstring& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = 0xFF000000, int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
-        Canvas& textFitRect(const std::wstring& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = 0xFF000000, int preferredFontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
-
-        Canvas& text(const std::string& text, int x, int y, const Color& color = 0xFF000000, int fontSize = 16, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
-        Canvas& textCentered(const std::string& text, int centerX, int centerY, const Color& color = 0xFF000000, int fontSize = 16, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
-        Canvas& textInRect(const std::string& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = 0xFF000000, int fontSize = 16, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
-        Canvas& textFitRect(const std::string& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = 0xFF000000, int preferredFontSize = 16, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
-    };
-
-    // ==================== 窗口系统 ====================
-    struct KeyEvent {
-        int keyCode;
-        bool pressed;
-    };
-
-    struct MouseEvent {
-        int x, y;
-        int button;       // 0=左键, 1=右键, 2=中键, -1=滚轮, -2=移动, -3=离开
-        bool pressed;     // 对于按键按下/释放
-        int wheelDelta;  // 滚轮增量
-    };
-
-    class Window {
-    public:
-        // 构造/析构
-        Window(int width, int height, const char* title);
-        ~Window();
-
-        // 禁止拷贝
-        Window(const Window&) = delete;
-        Window& operator=(const Window&) = delete;
-
-        // 事件回调
-        using KeyCallback = std::function<void(const KeyEvent&)>;
-        using MouseCallback = std::function<void(const MouseEvent&)>;
-        using ResizeCallback = std::function<void(int, int)>;
-        using CharCallback = std::function<void(wchar_t)>;
-        using FocusCallback = std::function<void(bool)>;
-        using CloseCallback = std::function<bool()>;
-        using MenuCallback = std::function<void(int)>;
-        using FileListCallback = std::function<void(const std::vector<std::string>&)>;
-
-        // 链式调用的回调设置方法
-        Window& onKey(KeyCallback cb);
-        Window& onMouse(MouseCallback cb);
-        Window& onResize(ResizeCallback cb);
-        Window& onChar(CharCallback cb);
-        Window& onFocus(FocusCallback cb);
-        Window& onClose(CloseCallback cb);
-        Window& onMenu(MenuCallback cb);
-        Window& onFileDrop(FileListCallback cb);
-        Window& onClipboardFiles(FileListCallback cb);
-
-        Window& disableClipboardFiles();
-
-        // 窗口状态
-        bool isOpen() const { return !shouldClose_; }
-        Window& close();
-
-        bool isMaximized() const { return hwnd_ && IsZoomed(hwnd_); }
-        bool isMinimized() const { return hwnd_ && IsIconic(hwnd_); }
-        bool isVisible() const { return hwnd_ && IsWindowVisible(hwnd_); }
-        bool isFullscreen() const { return isFullscreen_; }
-
-        // 窗口大小限制
-        Window& setMinSize(int minWidth, int minHeight);
-        Window& setMaxSize(int maxWidth, int maxHeight);
-
-        // 窗口样式控制
-        Window& setResizable(bool resizable);
-        Window& setAlwaysOnTop(bool onTop);
-        Window& setBorderless(bool borderless);
-        Window& setFullscreen(bool fullscreen);
-
-        // 控制右上角按钮
-        Window& setMinimizeButton(bool show);
-        Window& setMaximizeButton(bool show);
-        Window& setCloseButton(bool show);
-
-        // 鼠标状态查询
-        std::pair<int, int> getMousePosition() const;
-        bool isMouseInWindow() const;
-        static std::pair<int, int> getGlobalMousePosition();
-        bool isMouseButtonPressed(int button) const;
-
-        // 鼠标捕获与光标控制
-        Window& setMouseCapture(bool capture);
-        Window& setCursorVisibility(bool visible);
-        Window& setCursorPosition(int x, int y);
-
-        // 按键状态查询
-        bool isKeyPressed(int vkCode) const;
-        bool isShiftPressed() const;
-        bool isCtrlPressed() const;
-        bool isAltPressed() const;
-
-        // 剪贴板
-        bool setClipboardText(const std::string& text);
-        std::string getClipboardText();
-        bool setClipboardText(const std::wstring& text);
-        std::wstring getClipboardTextW();
-        bool hasClipboardText() const;
-
-        // 文件拖放方法
-        Window& enableFileDrop(bool enable = true);
-
-        // 文件剪贴板支持
-        std::vector<std::string> getClipboardFiles();
-        bool hasClipboardFiles() const;
-
-        // 窗口操作 - 链式调用
-        Window& show();
-        Window& hide();
-        Window& maximize();
-        Window& minimize();
-        Window& restore();
-        Window& setVisible(bool visible);
-        Window& focus();
-        Window& flash(bool flashTitleBar = true);
-
-        // 窗口大小和位置 - 链式调用
-        Window& setPosition(int x, int y);
-        Window& setClientSize(int width, int height);
-        Window& setWindowSize(int width, int height);
-
-        void getPosition(int& x, int& y) const;
-        void getClientSize(int& width, int& height) const;
-        void getWindowSize(int& width, int& height) const;
-
-        // 标题设置 - 链式调用
-        Window& setTitle(const char* title);
-        Window& setTitle(const wchar_t* title);
-        std::string getTitle() const;
-
-        // 光标设置 - 链式调用
-        Window& setCursor(HCURSOR cursor);
-        Window& setCursorDefault();
-        Window& setCursorWait();
-        Window& setCursorCross();
-        Window& setCursorHand();
-        Window& setCursorText();
-
-        // 图标设置 - 链式调用
-        Window& setIcon(HICON icon);
-        Window& setIconFromResource(int resourceId);
-
-        // 菜单功能 - 链式调用
-        Window& setMenu(HMENU menu);
-        HMENU createMenu();
-        HMENU createPopupMenu();
-        Window& appendMenuItem(HMENU menu, const char* text, int id, bool enabled = true);
-        Window& appendMenuSeparator(HMENU menu);
-        Window& appendMenuPopup(HMENU menu, const char* text, HMENU popupMenu);
-        Window& destroyMenu(HMENU menu);
-
-        // 渲染功能
-        void render(const Buffer& buffer, int destX = 0, int destY = 0,
-            int srcX = 0, int srcY = 0, int width = -1, int height = -1,
-            bool clearBackground = true, COLORREF bgColor = 0);
-        void renderCentered(const Buffer& buffer, bool clearBackground = true, COLORREF bgColor = 0);
-        void render(const Canvas& canvas, int destX = 0, int destY = 0,
-            int srcX = 0, int srcY = 0, int width = -1, int height = -1,
-            bool clearBackground = true, COLORREF bgColor = 0);
-        void renderCentered(const Canvas& canvas, bool clearBackground = true, COLORREF bgColor = 0);
-
-        // 系统信息（静态方法）
-        static std::pair<int, int> getScreenSize();
-        static std::pair<int, int> getWorkAreaSize();
-        static double getDpiScale();
-
-        // 公开成员变量（保持简单访问）
-        HWND hwnd_ = nullptr;
-        int width_ = 0;
-        int height_ = 0;
-        bool shouldClose_ = false;
-
-    private:
-        // 线程控制
-        std::thread messageThread_;
-        std::atomic<bool> running_{ false };
-        DWORD threadId_ = 0;
-        std::promise<bool> initPromise_;
-
-        // 窗口样式
-        // 无边框状态
-        LONG borderlessOriginalStyle_ = 0;
-        LONG borderlessOriginalExStyle_ = 0;
-        int borderlessOriginalClientWidth_ = 0;
-        int borderlessOriginalClientHeight_ = 0;
-        bool borderlessStateSaved_ = false;
-        bool isBorderless_ = false;
-
-        // 全屏状态
-        LONG fullscreenOriginalStyle_ = 0;
-        LONG fullscreenOriginalExStyle_ = 0;
-        RECT fullscreenOriginalRect_ = { 0 };
-        bool fullscreenStateSaved_ = false;
-        bool isFullscreen_ = false;
-
-        // 窗口大小限制
-        int minWidth_ = 0;
-        int minHeight_ = 0;
-        int maxWidth_ = 0;
-        int maxHeight_ = 0;
-
-        // 鼠标跟踪状态
-        std::atomic<bool> trackingMouse_{ false };
-
-        // 渲染相关成员
-        struct DirectBuffer {
-            BITMAPINFO bmi = {};
-        } directBuffer_;
-
-        // 渲染优化相关
-        int lastClientWidth_ = 0;
-        int lastClientHeight_ = 0;
-        int lastBufferWidth_ = 0;
-        int lastBufferHeight_ = 0;
-        bool sizeChanged_ = true;
-
-        // 回调函数
-        KeyCallback keyCb_;
-        MouseCallback mouseCb_;
-        ResizeCallback resizeCb_;
-        CharCallback charCb_;
-        FocusCallback focusCb_;
-        CloseCallback closeCb_;
-        MenuCallback menuCb_;
-        FileListCallback dropCb_;
-        FileListCallback clipboardFilesCb_; // 文件剪贴板回调
-
-        HWND nextClipboardViewer_ = nullptr;  // 剪贴板查看器链
-
-        HDC persistentDC_ = nullptr;
-    };
+    template<typename GeometryType>
+    Canvas& Canvas::drawBatch(const std::vector<GeometryType>& geometries, const Style& style) {
+        for (const auto& geometry : geometries)draw(geometry, style);
+        return *this;
+    }
+    template<typename GeometryType>
+    Canvas& Canvas::drawBatch(const std::vector<GeometryType>& geometries, const std::vector<Style>& styles) {
+        for (size_t i = 0; i < geometries.size(); ++i)draw(geometries[i], (i < styles.size()) ? styles[i] : (!styles.empty()) ? styles.back() : Style());
+        return *this;
+    }
 }
-
-
