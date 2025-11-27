@@ -176,10 +176,6 @@ This project uses a permissive open source license.
 
 📝 Retain original copyright notice when distributing
 
-## 🙏 Acknowledgments
-
-Thanks to all developers who contributed to this project, with special thanks to EasyX graphics library for inspiration.
-
 <a id= pa2d---轻量级-c-2d-图形库></a>
 
 # PA2D - 轻量级 C++ 图形库
@@ -363,6 +359,3 @@ window.render(canvas);       // 显式执行渲染
 
 📝 在分发时保留原始的版权声明
 
-## 🙏 致谢
-
-感谢所有为这个项目做出贡献的开发者，特别感谢 EasyX 图形库的启发。
