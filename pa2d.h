@@ -113,20 +113,6 @@ namespace pa2d {
         // 扇形
         Canvas& sector(float cx, float cy, float radius, float startAngleDeg, float endAngleDeg, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f, bool drawArc = true, bool drawRadialEdges = true);
 
-        // ==================== 面向对象图形绘制 ====================
-        Canvas& draw(const Points&, const Style&);
-        Canvas& draw(const Line&, const Style&);
-        Canvas& draw(const Ray&, const Style&);
-        Canvas& draw(const Rect&, const Style&);
-        Canvas& draw(const Triangle&, const Style&);
-        Canvas& draw(const Polygon&, const Style&);
-        Canvas& draw(const Circle&, const Style&);
-        Canvas& draw(const Elliptic&, const Style&);
-        Canvas& draw(const Sector&, const Style&);
-
-        template<typename GeometryType> Canvas& drawBatch(const std::vector<GeometryType>& geometries, const Style& style);
-        template<typename GeometryType> Canvas& drawBatch(const std::vector<GeometryType>& geometries, const std::vector<Style>& styles);
-
         // ==================== 图像混合 ====================
         Canvas& alphaBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
         Canvas& addBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
@@ -159,6 +145,20 @@ namespace pa2d {
         Canvas& textCentered(const std::string& text, int centerX, int centerY, const Color& color = 0xFF000000, int fontSize = 16, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
         Canvas& textInRect(const std::string& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = 0xFF000000, int fontSize = 16, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
         Canvas& textFitRect(const std::string& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = 0xFF000000, int preferredFontSize = 16, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
+    
+        // ==================== 面向对象图形绘制 ====================
+        Canvas& draw(const Points&, const Style&);
+        Canvas& draw(const Line&, const Style&);
+        Canvas& draw(const Ray&, const Style&);
+        Canvas& draw(const Rect&, const Style&);
+        Canvas& draw(const Triangle&, const Style&);
+        Canvas& draw(const Polygon&, const Style&);
+        Canvas& draw(const Circle&, const Style&);
+        Canvas& draw(const Elliptic&, const Style&);
+        Canvas& draw(const Sector&, const Style&);
+        // 数组批量绘制
+        template<typename GeometryType> Canvas& drawBatch(const std::vector<GeometryType>& geometries, const Style& style);
+        template<typename GeometryType> Canvas& drawBatch(const std::vector<GeometryType>& geometries, const std::vector<Style>& styles);
     };
     // ==================== 窗口系统 ====================
     struct KeyEvent {
@@ -611,29 +611,7 @@ namespace pa2d {
         static Builder from(float x, float y);
         static Builder from(const Point& start);
     };
-    // ==================== 底层渲染算法 ====================
-    // 图像加载
-    bool load_image(Buffer& buffer, const char* filePath);
-    bool load_image(Buffer& buffer, int resourceID);
-    bool load_image(Buffer& buffer, void* hInstance, int resourceID);
-    // 图像变换
-    Buffer crop(const Buffer& src, int x, int y, int w, int h);
-    void drawScaledBuffer(Buffer& dest, const Buffer& src, float centerX, float centerY, float scaleX, float scaleY);
-    void drawScaledBuffer(Buffer& dest, const Buffer& src, float centerX, float centerY, float scale);
-    void drawRotatedBuffer(Buffer& dest, const Buffer& src, float centerX, float centerY, float rotation);
-    void drawScaledRotatedBuffer(Buffer& dest, const Buffer& src, float centerX, float centerY, float scale, float rotation);
-    Buffer scaleBuffer(const Buffer& src, float scaleX, float scaleY);
-    Buffer scaleBuffer(const Buffer& src, float factor);
-    Buffer rotatedBuffer(const Buffer& src, float rotation);
-    Buffer scaledRotatedBuffer(const Buffer& src, float scale = 1.0f, float rotation = 0.0f);
-    // 图像混合
-    void CopyBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
-    void AlphaBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
-    void AddBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
-    void MultiplyBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
-    void ScreenBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
-    void OverlayBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
-    void DestAlphaBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
+    // ==================== 底层图层算法 ====================
     // 图形渲染
     void drawLine(Buffer& buffer, float fx0, float fy0, float fx1, float fy1, const Color& color, float lineWidth = 1.0f);
     void drawPolyline(Buffer& buffer, const std::vector<Point>& points, const Color& color, float lineWidth = 1.0f, bool closed = false);
@@ -647,6 +625,30 @@ namespace pa2d {
     void drawEllipse(Buffer& buffer, float cx, float cy, float width, float height, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
     void drawEllipse(Buffer& buffer, float cx, float cy, float width, float height, float angle, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
     void drawSector(Buffer& buffer, float cx, float cy, float radius, float startAngleDeg, float endAngleDeg, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f, bool drawArc = true, bool drawRadialEdges = true);
+    // ==================== 底层图像算法 ====================
+    // 图像加载
+    bool load_image(Buffer& buffer, const char* filePath);
+    bool load_image(Buffer& buffer, int resourceID);
+    bool load_image(Buffer& buffer, void* hInstance, int resourceID);
+    // 图像变换
+    void drawScaledBuffer(Buffer& dest, const Buffer& src, float centerX, float centerY, float scaleX, float scaleY);
+    void drawScaledBuffer(Buffer& dest, const Buffer& src, float centerX, float centerY, float scale);
+    void drawRotatedBuffer(Buffer& dest, const Buffer& src, float centerX, float centerY, float rotation);
+    void drawScaledRotatedBuffer(Buffer& dest, const Buffer& src, float centerX, float centerY, float scale, float rotation);
+    Buffer crop(const Buffer& src, int x, int y, int w, int h);
+    Buffer scaleBuffer(const Buffer& src, float scaleX, float scaleY);
+    Buffer scaleBuffer(const Buffer& src, float factor);
+    Buffer rotatedBuffer(const Buffer& src, float rotation);
+    Buffer scaledRotatedBuffer(const Buffer& src, float scale = 1.0f, float rotation = 0.0f);
+    // 图像混合
+    void CopyBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
+    void AlphaBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
+    void AddBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
+    void MultiplyBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
+    void ScreenBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
+    void OverlayBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
+    void DestAlphaBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
+    // ==================== 底层文字算法 ====================
     //文字渲染函数
     bool drawText(Buffer& buffer, const std::string& text, float x, float y, const Color& color = Color(255, 255, 255, 255), int fontSize = 16, const std::string& fontName = "Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
     void drawTextInRect(Buffer& buffer, const std::string& text, float rectX, float rectY, float rectWidth, float rectHeight, const Color& color = Color(255, 255, 255, 255), int fontSize = 16, const std::string& fontName = "Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
@@ -704,7 +706,7 @@ namespace pa2d {
     extern const DrawRadialEdgesTag draw_edges;
     extern const DrawRadialEdgesTag no_edges;
     StyleBuilder operator+(const StyleBuilder& builder, const TagBase& newTag);
-
+    // ==================== 模板函数定义 ====================
     template<typename GeometryType>
     Canvas& Canvas::drawBatch(const std::vector<GeometryType>& geometries, const Style& style) {
         for (const auto& geometry : geometries)draw(geometry, style);
@@ -716,4 +718,3 @@ namespace pa2d {
         return *this;
     }
 }
-
