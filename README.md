@@ -2,7 +2,7 @@
 
 # PA2D - Modern C++ 2D Graphics Programming Library
 
-[简体中文](#pa2d---轻量级-c-2d-图形库) | [English](#pa2d---modern-c-2d-graphics-programming-library) 
+[English](#pa2d---modern-c-2d-graphics-programming-library) | [简体中文](#pa2d---轻量级-c-2d-图形库)
 
 ## 🎯 Project Overview
 
