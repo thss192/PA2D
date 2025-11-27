@@ -3,42 +3,42 @@
 [简体中文](#pa2d---轻量级-c-2d-图形库) | [English](#pa2d---modern-c-2d-graphics-programming-library) 
 <a id= pa2d---modern-c-2d-graphics-programming-library></a>
 
-## Project Overview
+## 🎯 Project Overview
 
 PA2D is a lightweight 2D graphics programming library designed for modern C++, providing developers with simple yet powerful graphics drawing solutions. It perfectly balances beginner-friendliness and professional development needs, making graphics programming more intuitive and efficient.
 
-## Release Contents
+## 📦 Release Contents
 
 Current version provides:
 - **Header file** (`pa2d.h`) - Complete API interface
 - **Pre-compiled libraries** - Debug and Release versions
 - **Example code** - Practical examples for quick start
 
-## Core Features
+## ✨ Core Features
 
-### Layered Architecture Design
+### 🏗️ Layered Architecture Design
 - **Low-level**: High-performance rendering core with zero-cost abstraction
 - **Mid-level**: Unified geometric transformation system
 - **High-level**: Fluent chainable API for rapid development
 
-### Rich Graphics Support
+### 🎨 Rich Graphics Support
 - Basic shapes: Points, lines, rectangles, circles, ellipses, triangles, polygons
 - Advanced shapes: Sectors, rays, path building
 - Text rendering: Support for Chinese/English, multiple fonts and styles
 - Image processing: Loading, transformation, blending, cropping
 
-### Flexible Drawing System
+### 🖼️ Flexible Drawing System
 - Multiple abstraction levels: From low-level bitmap operations to high-level OOP interfaces
 - Unified styling system: Support for fill, stroke, opacity, etc.
 - Geometric transformations: Unified interface for translation, rotation, scaling
 
-### Powerful Window Management
+### 🪟 Powerful Window Management
 - Multi-window support
 - Complete event system (keyboard, mouse, file drop, etc.)
 - Thread-safe window message handling
 - Custom menus and cursors
 
-## Project Structure
+## 📁 Project Structure
 
 ```txt
 PA2D/
@@ -66,7 +66,7 @@ Include the header in your code: `#include "pa2d.h"`
 - Visual Studio 2019 or higher
 - C++14 or higher standard
 
-## Usage Examples
+## 🎮 Usage Examples
 
 ### Basic Drawing Example
 
@@ -119,7 +119,7 @@ int main() {
     return 0;
 }
 ```
-## API Design Philosophy
+## 🔧 API Design Philosophy
 ### Fluent Interface Design
 ```cpp
 // All geometric objects share unified interface
@@ -140,7 +140,7 @@ Canvas canvas(800, 600);     // Explicitly create canvas
 canvas.circle(...);          // Explicitly draw graphics
 window.render(canvas);       // Explicitly execute rendering
 ```
-## Example Code
+## 📚 Example Code
 The project includes multiple practical examples:
 
 · basic_demo.cpp - Basic graphics drawing
@@ -150,7 +150,7 @@ The project includes multiple practical examples:
 · clock_app.cpp - Real-time clock application
 
 · file_drop.cpp - File drop functionality
-## Issue Reporting
+## 🐛 Issue Reporting
 If you encounter any issues, please report them by:
 
 1. Creating a new issue in GitHub Issues
@@ -173,7 +173,7 @@ This project uses a permissive open source license.
 
 📝 Retain original copyright notice when distributing
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
 Thanks to all developers who contributed to this project, with special thanks to EasyX graphics library for inspiration.
 
