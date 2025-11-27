@@ -1,8 +1,5 @@
 #pragma once
-#ifdef _WIN32
-#define NOMINMAX  // 避免max,min冲突
 #include <windows.h>
-#endif
 #include <cmath>
 #include <vector>
 #include <cstdint>
@@ -953,3 +950,4 @@ namespace pa2d {
         HDC persistentDC_ = nullptr;
     };
 }
+
