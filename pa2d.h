@@ -69,6 +69,10 @@ namespace pa2d {
         bool operator&(const FontStyle& other) const;
         bool operator==(const FontStyle& other) const;
     };
+    bool measureText(const std::wstring& text, int fontSize, const std::wstring& fontName, const FontStyle& style, int& width, int& height);
+    bool measureText(const std::string& text, int fontSize, const std::string& fontName, const FontStyle& style, int& width, int& height);
+    int calculateFontSize(const std::wstring& text, float maxWidth, float maxHeight, int preferredFontSize = 12, const std::wstring& fontName = L"Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
+    int calculateFontSize(const std::string& text, float maxWidth, float maxHeight, int preferredFontSize = 12, const std::string& fontName = "Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
     // ==================== Canvas 画布系统 ====================
     class Canvas {
         Buffer buffer;
@@ -608,7 +612,7 @@ namespace pa2d {
         static Builder from(float x, float y);
         static Builder from(const Point& start);
     };
-    // ==================== 渲染算法 ====================
+    // ==================== 底层渲染算法 ====================
     // 图像加载
     bool load_image(Buffer& buffer, const char* filePath);
     bool load_image(Buffer& buffer, int resourceID);
@@ -644,11 +648,6 @@ namespace pa2d {
     void drawEllipse(Buffer& buffer, float cx, float cy, float width, float height, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
     void drawEllipse(Buffer& buffer, float cx, float cy, float width, float height, float angle, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
     void drawSector(Buffer& buffer, float cx, float cy, float radius, float startAngleDeg, float endAngleDeg, const Color& fillColor = 0, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f, bool drawArc = true, bool drawRadialEdges = true);
-    // 文字测量函数
-    bool measureText(const std::wstring& text, int fontSize, const std::wstring& fontName, const FontStyle& style, int& width, int& height);
-    bool measureText(const std::string& text, int fontSize, const std::string& fontName, const FontStyle& style, int& width, int& height);
-    int calculateFontSize(const std::wstring& text, float maxWidth, float maxHeight, int preferredFontSize = 12, const std::wstring& fontName = L"Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
-    int calculateFontSize(const std::string& text, float maxWidth, float maxHeight, int preferredFontSize = 12, const std::string& fontName = "Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
     //文字渲染函数
     bool drawText(Buffer& buffer, const std::string& text, float x, float y, const Color& color = Color(255, 255, 255, 255), int fontSize = 16, const std::string& fontName = "Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
     void drawTextInRect(Buffer& buffer, const std::string& text, float rectX, float rectY, float rectWidth, float rectHeight, const Color& color = Color(255, 255, 255, 255), int fontSize = 16, const std::string& fontName = "Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
