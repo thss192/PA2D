@@ -658,7 +658,8 @@ namespace pa2d {
     void drawTextInRect(Buffer& buffer, const std::wstring& text, float rectX, float rectY, float rectWidth, float rectHeight, const Color& color = Color(255, 255, 255, 255), int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
     void drawTextFitRect(Buffer& buffer, const std::wstring& text, float rectX, float rectY, float rectWidth, float rectHeight, const Color& color = Color(255, 255, 255, 255), int preferredFontSize = 12, const std::wstring& fontName = L"Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
     void drawTextCentered(Buffer& buffer, const std::wstring& text, float centerX, float centerY, const Color& color = Color(255, 255, 255, 255), int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
-    // ==================== Style 字面量扩展 ====================
+    // ==================== Style 字面量扩展(可关闭) ====================
+#ifndef PA2D_DISABLE_LITERALS  // Style 字面量开关宏
     struct StyleBuilder;
     struct TagBase {
         virtual ~TagBase() = default;
@@ -672,24 +673,23 @@ namespace pa2d {
         StyleBuilder& operator=(const StyleBuilder& other);
         operator Style() const;
     };
-#define TAG(Name, Type, Member) \
+#define TAG(Name, Type) \
     struct Name##Tag : public TagBase { \
-        Type Member; \
-        Name##Tag(Type val) : Member(val) {} \
+        Type val_; \
+        Name##Tag(Type val) : val_(val) {} \
         void applyTo(Style& style) const override; \
         std::unique_ptr<TagBase> clone() const override; \
         operator StyleBuilder() const; \
+        operator Style() const;\
     };
-    TAG(Fill, uint32_t, argb)      // 填充颜色
-    TAG(Stroke, uint32_t, argb)    // 描边颜色
-    TAG(Width, float, value)       // 线宽
-    TAG(Radius, float, value)      // 圆角半径
-    TAG(Opacity, float, value)     // 不透明度
-    TAG(DrawArc, bool, value)      // 是否绘制弧线
-    TAG(DrawRadialEdges, bool, value) // 是否绘制径向边
+    TAG(Fill, uint32_t)      // 填充颜色
+    TAG(Stroke, uint32_t)    // 描边颜色
+    TAG(Width, float)       // 线宽
+    TAG(Radius, float)      // 圆角半径
+    TAG(Opacity, float)     // 不透明度
+    TAG(DrawArc, bool)      // 是否绘制弧线
+    TAG(DrawRadialEdges, bool) // 是否绘制径向边
 #undef TAG
-     // 字面量开关宏
-#ifndef PA2D_DISABLE_LITERALS
     namespace detail {uint32_t parseColorString(const char* str, size_t len);}
     inline FillTag operator"" _fill(unsigned long long hex) { return FillTag(static_cast<uint32_t>(hex)); }
     inline StrokeTag operator"" _stroke(unsigned long long hex) { return StrokeTag(static_cast<uint32_t>(hex)); }
@@ -700,12 +700,12 @@ namespace pa2d {
     inline OpacityTag operator"" _o(long double o) { return OpacityTag(static_cast<float>(o)); }
     inline FillTag operator"" _fill(const char* str, size_t len) { return FillTag(detail::parseColorString(str, len)); }
     inline StrokeTag operator"" _stroke(const char* str, size_t len) { return StrokeTag(detail::parseColorString(str, len)); }
-#endif // PA2D_DISABLE_LITERALS
     extern const DrawArcTag draw_arc;
     extern const DrawArcTag no_arc;
     extern const DrawRadialEdgesTag draw_edges;
     extern const DrawRadialEdgesTag no_edges;
     StyleBuilder operator+(const StyleBuilder& builder, const TagBase& newTag);
+#endif // PA2D_DISABLE_LITERALS
     // ==================== 模板函数定义 ====================
     template<typename GeometryType>
     Canvas& Canvas::drawBatch(const std::vector<GeometryType>& geometries, const Style& style) {
