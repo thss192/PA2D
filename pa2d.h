@@ -8,7 +8,7 @@
 #include <future>
 #pragma comment(lib, "gdiplus.lib")
 namespace pa2d {
-    // ==================== åŸºç¡€é¢œè‰²(ARGB) ====================
+    // ==================== »ù´¡ÑÕÉ«(ARGB) ====================
     struct Color {
         union { uint32_t data, argb; struct { uint8_t b, g, r, a; }; struct { uint32_t rgb : 24, _ : 8; }; };
         Color() :data(0) {} Color(uint32_t argb) :data(argb) {} Color(uint8_t a, uint8_t r, uint8_t g, uint8_t b) :a(a), r(r), g(g), b(b) {}
@@ -19,7 +19,7 @@ namespace pa2d {
     const Color Red = 0xFFFF0000, Green = 0xFF00FF00, Blue = 0xFF0000FF;
     const Color Cyan = 0xFF00FFFF, Magenta = 0xFFFF00FF, Yellow = 0xFFFFFF00;
     const Color Gray = 0xFF808080, LightGray = 0xFFC0C0C0, DarkGray = 0xFF404040;
-    // ==================== Buffer ä½å›¾å­˜å‚¨ ====================
+    // ==================== Buffer Î»Í¼´æ´¢ ====================
     struct Buffer {
         Color* color;
         int width, height;
@@ -36,7 +36,7 @@ namespace pa2d {
         Buffer& operator=(Buffer&& other) noexcept;
         explicit operator bool() const { return color && width > 0 && height > 0;; }
     };
-    // ==================== Pointç»“æ„ä½“ ====================
+    // ==================== Point½á¹¹Ìå ====================
     struct Point {
         float x, y;
         Point(); Point(float x, float y);
@@ -49,13 +49,13 @@ namespace pa2d {
         friend Point operator-(const Point&, float); friend Point operator-(float, const Point&);
         friend Point operator*(const Point&, float); friend Point operator*(float, const Point&);
         friend Point operator/(const Point&, float); friend Point operator/(float, const Point&);
-        // å˜æ¢
+        // ±ä»»
         Point& translate(float dx, float dy);
         Point& scale(float factorX, float factorY); Point& scale(float factor);
         Point& rotate(float angleDegrees, float centerX = 0, float centerY = 0);
     };
     class Points;class Line;class Ray;class Triangle;class Rect;class Polygon;class Circle;class Elliptic;class Sector;struct Style;
-    // ==================== æ–‡å­—æ ·å¼ç³»ç»Ÿ ====================
+    // ==================== ÎÄ×ÖÑùÊ½ÏµÍ³ ====================
     enum class TextEncoding { ANSI, UTF8, UTF16, CURRENT };
     TextEncoding textEncoding(TextEncoding newEncoding = TextEncoding::CURRENT);
     void setTextAntiAliasing(bool enable);
@@ -73,11 +73,11 @@ namespace pa2d {
     bool measureText(const std::string& text, int fontSize, const std::string& fontName, const FontStyle& style, int& width, int& height);
     int calculateFontSize(const std::wstring& text, float maxWidth, float maxHeight, int preferredFontSize = 12, const std::wstring& fontName = L"Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
     int calculateFontSize(const std::string& text, float maxWidth, float maxHeight, int preferredFontSize = 12, const std::string& fontName = "Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
-    // ==================== Canvas ç”»å¸ƒç³»ç»Ÿ ====================
+    // ==================== Canvas »­²¼ÏµÍ³ ====================
     class Canvas {
         Buffer buffer;
     public:
-        // ==================== æ„é€ å’ŒåŸºç¡€è®¿é—® ====================
+        // ==================== ¹¹ÔìºÍ»ù´¡·ÃÎÊ ====================
         Canvas();
         Canvas(int width, int height, Color background = 0xFFFFFFFF);
         Canvas(const Buffer& buf); Canvas(Buffer&& buf);
@@ -88,32 +88,32 @@ namespace pa2d {
         Color& at(int x, int y); const Color& at(int x, int y) const;
         const Buffer& getBuffer() const; Buffer& getBuffer();
 
-        // ==================== å›¾åƒæ“ä½œ ====================
+        // ==================== Í¼Ïñ²Ù×÷ ====================
         bool loadImage(const char* filePath); bool loadImage(int resourceID);
         Canvas& clear(Color color = 0xFFFFFFFF);
         Canvas& crop(int x, int y, int width, int height);
         Canvas& resize(int newWidth, int newHeight, uint32_t clearColor = 0xFFFFFFFF);
 
-        // ==================== åŸºç¡€å›¾å½¢ ====================
-        // çº¿å’Œå¤šè¾¹å½¢
+        // ==================== »ù´¡Í¼ĞÎ ====================
+        // ÏßºÍ¶à±ßĞÎ
         Canvas& line(float x0, float y0, float x1, float y1, const Color& color, float lineWidth = 1.0f);
         Canvas& polyline(const std::vector<Point>& points, const Color& color, float lineWidth = 1.0f, bool closed = false);
         Canvas& polygon(const std::vector<Point>& vertices, const Color& fillColor, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
-        // ä¸‰è§’å½¢
+        // Èı½ÇĞÎ
         Canvas& triangle(float ax, float ay, float bx, float by, float cx, float cy, const Color& fillColor, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
-        // çŸ©å½¢ç›¸å…³
+        // ¾ØĞÎÏà¹Ø
         Canvas& rect(float x, float y, float width, float height, const Color& fillColor, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
         Canvas& rect(float centerX, float centerY, float width, float height, float angle, const Color& fillColor, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
         Canvas& roundRect(float x, float y, float width, float height, const Color& fillColor, const Color& strokeColor = 0, float cornerRadius = 0.0f, float strokeWidth = 1.0f, float opacity = 1.0f);
         Canvas& roundRect(float centerX, float centerY, float width, float height, float angle, const Color& fillColor, const Color& strokeColor = 0, float cornerRadius = 0.0f, float strokeWidth = 1.0f, float opacity = 1.0f);
-        // åœ†å½¢å’Œæ¤­åœ†
+        // Ô²ĞÎºÍÍÖÔ²
         Canvas& circle(float centerX, float centerY, float radius, const Color& fillColor, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
         Canvas& ellipse(float cx, float cy, float width, float height, const Color& fillColor, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
         Canvas& ellipse(float cx, float cy, float width, float height, float angle, const Color& fillColor, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
-        // æ‰‡å½¢
+        // ÉÈĞÎ
         Canvas& sector(float cx, float cy, float radius, float startAngleDeg, float endAngleDeg, const Color& fillColor, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f, bool drawArc = true, bool drawRadialEdges = true);
 
-        // ==================== å›¾åƒæ··åˆ ====================
+        // ==================== Í¼Ïñ»ìºÏ ====================
         Canvas& alphaBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
         Canvas& addBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
         Canvas& multiplyBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
@@ -122,20 +122,20 @@ namespace pa2d {
         Canvas& destAlphaBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
         Canvas& copyBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
 
-        // ==================== å›¾åƒå˜æ¢ç»˜åˆ¶ ====================
+        // ==================== Í¼Ïñ±ä»»»æÖÆ ====================
         Canvas& draw(const Canvas& other, int x = 0, int y = 0, int alpha = 255);
         Canvas& drawRotated(const Canvas& src, float centerX, float centerY, float rotation = 0.0f);
         Canvas& drawScaled(const Canvas& src, float centerX, float centerY, float scaleX, float scaleY);
         Canvas& drawScaled(const Canvas& src, float centerX, float centerY, float scale = 1.0f);
         Canvas& drawScaledRotated(const Canvas& src, float centerX, float centerY, float scale = 1.0f, float rotation = 0.0f);
 
-        // ==================== å›¾åƒå˜æ¢å‰¯æœ¬ ====================
+        // ==================== Í¼Ïñ±ä»»¸±±¾ ====================
         Canvas createCropped(int x, int y, int width, int height) const;
         Canvas createScaled(float scaleX, float scaleY) const;
         Canvas createRotated(float rotation) const;
         Canvas createScaledRotated(float scale = 1.0f, float rotation = 0.0f) const;
 
-        // ==================== æ–‡æœ¬ç»˜åˆ¶ ====================
+        // ==================== ÎÄ±¾»æÖÆ ====================
         Canvas& text(const std::wstring& text, int x, int y, const Color& color = 0xFF000000, int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
         Canvas& textCentered(const std::wstring& text, int centerX, int centerY, const Color& color = 0xFF000000, int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
         Canvas& textInRect(const std::wstring& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = 0xFF000000, int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
@@ -146,7 +146,7 @@ namespace pa2d {
         Canvas& textInRect(const std::string& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = 0xFF000000, int fontSize = 16, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
         Canvas& textFitRect(const std::string& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = 0xFF000000, int preferredFontSize = 16, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
     
-        // ==================== é¢å‘å¯¹è±¡å›¾å½¢ç»˜åˆ¶ ====================
+        // ==================== ÃæÏò¶ÔÏóÍ¼ĞÎ»æÖÆ ====================
         Canvas& draw(const Points&, const Style&);
         Canvas& draw(const Line&, const Style&);
         Canvas& draw(const Ray&, const Style&);
@@ -156,22 +156,22 @@ namespace pa2d {
         Canvas& draw(const Circle&, const Style&);
         Canvas& draw(const Elliptic&, const Style&);
         Canvas& draw(const Sector&, const Style&);
-        // æ•°ç»„æ‰¹é‡ç»˜åˆ¶
+        // Êı×éÅúÁ¿»æÖÆ
         template<typename GeometryType> Canvas& drawBatch(const std::vector<GeometryType>& geometries, const Style& style);
         template<typename GeometryType> Canvas& drawBatch(const std::vector<GeometryType>& geometries, const std::vector<Style>& styles);
     };
-    // ==================== çª—å£ç³»ç»Ÿ ====================
+    // ==================== ´°¿ÚÏµÍ³ ====================
     struct KeyEvent {
         int keyCode;
         bool pressed;
     };
     struct MouseEvent {
         int x, y;
-        int button;       // 0=å·¦é”®, 1=å³é”®, 2=ä¸­é”®, -1=æ»šè½®, -2=ç§»åŠ¨, -3=ç¦»å¼€
-        bool pressed;     // å¯¹äºæŒ‰é”®æŒ‰ä¸‹/é‡Šæ”¾
-        int wheelDelta;  // æ»šè½®å¢é‡
+        int button;       // 0=×ó¼ü, 1=ÓÒ¼ü, 2=ÖĞ¼ü, -1=¹öÂÖ, -2=ÒÆ¶¯, -3=Àë¿ª
+        bool pressed;     // ¶ÔÓÚ°´¼ü°´ÏÂ/ÊÍ·Å
+        int wheelDelta;  // ¹öÂÖÔöÁ¿
     };
-    // äº‹ä»¶å›è°ƒç±»å‹å®šä¹‰
+    // ÊÂ¼ş»Øµ÷ÀàĞÍ¶¨Òå
     using KeyCallback = std::function<void(const KeyEvent&)>;
     using MouseCallback = std::function<void(const MouseEvent&)>;
     using ResizeCallback = std::function<void(int, int)>;
@@ -183,32 +183,35 @@ namespace pa2d {
 
     class Window {
     public:
-        // ==================== å¸¸ç”¨åŠŸèƒ½ ====================
-        // æ„é€ /ææ„
+        // ==================== ³£ÓÃ¹¦ÄÜ ====================
+        // ¹¹Ôì/Îö¹¹
         Window(int width, int height, const char* title);
         ~Window();
 
-        // å…¬å¼€æˆå‘˜å˜é‡
+        // ¹«¿ª³ÉÔ±±äÁ¿
         HWND hwnd_ = nullptr;
         int width_ = 0;
         int height_ = 0;
         bool shouldClose_ = false;
 
-        // çª—å£çŠ¶æ€æŸ¥è¯¢
+        // ´°¿Ú×´Ì¬²éÑ¯
         bool isOpen() const { return !shouldClose_; }
         bool isVisible() const { return hwnd_ && IsWindowVisible(hwnd_); }
         bool isMaximized() const { return hwnd_ && IsZoomed(hwnd_); }
         bool isMinimized() const { return hwnd_ && IsIconic(hwnd_); }
         bool isFullscreen() const { return isFullscreen_; }
 
-        // çª—å£æ“ä½œ
+        // ´°¿Ú²Ù×÷
         Window& show();
         Window& hide();
         Window& close();
         Window& setVisible(bool visible);
         Window& focus();
 
-        // çª—å£å¤§å°å’Œä½ç½®
+        // ¶ÂÈûµÈ´ı
+        Window& waitForClose();
+
+        // ´°¿Ú´óĞ¡ºÍÎ»ÖÃ
         Window& setPosition(int x, int y);
         Window& setClientSize(int width, int height);
         Window& setWindowSize(int width, int height);
@@ -216,13 +219,13 @@ namespace pa2d {
         void getClientSize(int& width, int& height) const;
         void getWindowSize(int& width, int& height) const;
 
-        // æ¸²æŸ“åŠŸèƒ½
+        // äÖÈ¾¹¦ÄÜ
         void render(const Canvas& canvas, int destX = 0, int destY = 0, int srcX = 0, int srcY = 0, int width = -1, int height = -1, bool clearBackground = true, COLORREF bgColor = 0);
         void renderCentered(const Canvas& canvas, bool clearBackground = true, COLORREF bgColor = 0);
         void render(const Buffer& buffer, int destX = 0, int destY = 0, int srcX = 0, int srcY = 0, int width = -1, int height = -1, bool clearBackground = true, COLORREF bgColor = 0);
         void renderCentered(const Buffer& buffer, bool clearBackground = true, COLORREF bgColor = 0);
 
-        // ==================== äº‹ä»¶å›è°ƒ ====================
+        // ==================== ÊÂ¼ş»Øµ÷ ====================
         Window& onKey(KeyCallback cb);
         Window& onMouse(MouseCallback cb);
         Window& onResize(ResizeCallback cb);
@@ -234,7 +237,7 @@ namespace pa2d {
         Window& onClipboardFiles(FileListCallback cb);
         Window& disableClipboardFiles();
 
-        // ==================== è¾“å…¥çŠ¶æ€ ====================
+        // ==================== ÊäÈë×´Ì¬ ====================
         std::pair<int, int> getMousePosition() const;
         bool isMouseInWindow() const;
         bool isMouseButtonPressed(int button) const;
@@ -243,7 +246,7 @@ namespace pa2d {
         bool isCtrlPressed() const;
         bool isAltPressed() const;
 
-        // ==================== é«˜çº§çª—å£æ§åˆ¶ ====================
+        // ==================== ¸ß¼¶´°¿Ú¿ØÖÆ ====================
         Window& maximize();
         Window& minimize();
         Window& restore();
@@ -258,7 +261,7 @@ namespace pa2d {
         Window& setMaximizeButton(bool show);
         Window& setCloseButton(bool show);
 
-        // ==================== å¤–è§‚è®¾ç½® ====================
+        // ==================== Íâ¹ÛÉèÖÃ ====================
         Window& setTitle(const char* title);
         Window& setTitle(const wchar_t* title);
         std::string getTitle() const;
@@ -273,11 +276,11 @@ namespace pa2d {
         Window& setIcon(HICON icon);
         Window& setIconFromResource(int resourceId);
 
-        // ==================== è¾“å…¥æ§åˆ¶ ====================
+        // ==================== ÊäÈë¿ØÖÆ ====================
         Window& setMouseCapture(bool capture);
         static std::pair<int, int> getGlobalMousePosition();
 
-        // ==================== å‰ªè´´æ¿å’Œæ–‡ä»¶ ====================
+        // ==================== ¼ôÌù°åºÍÎÄ¼ş ====================
         bool setClipboardText(const std::string& text);
         std::string getClipboardText();
         bool setClipboardText(const std::wstring& text);
@@ -287,7 +290,7 @@ namespace pa2d {
         bool hasClipboardFiles() const;
         Window& enableFileDrop(bool enable = true);
 
-        // ==================== èœå•åŠŸèƒ½ ====================
+        // ==================== ²Ëµ¥¹¦ÄÜ ====================
         Window& setMenu(HMENU menu);
         HMENU createMenu();
         HMENU createPopupMenu();
@@ -296,16 +299,17 @@ namespace pa2d {
         Window& appendMenuPopup(HMENU menu, const char* text, HMENU popupMenu);
         Window& destroyMenu(HMENU menu);
 
-        // ==================== ç³»ç»Ÿä¿¡æ¯ ====================
+        // ==================== ÏµÍ³ĞÅÏ¢ ====================
         static std::pair<int, int> getScreenSize();
         static std::pair<int, int> getWorkAreaSize();
         static double getDpiScale();
 
-        // ç¦æ­¢æ‹·è´
+        // ½ûÖ¹¿½±´
         Window(const Window&) = delete;
         Window& operator=(const Window&) = delete;
    private:
        std::thread messageThread_; std::atomic<bool> running_{ false }; DWORD threadId_ = 0; std::promise<bool> initPromise_;
+       std::condition_variable closeCv_;std::mutex closeMutex_;bool windowClosed_ = false;
        LONG borderlessOriginalStyle_ = 0; LONG borderlessOriginalExStyle_ = 0; int borderlessOriginalClientWidth_ = 0; int borderlessOriginalClientHeight_ = 0; bool borderlessStateSaved_ = false; bool isBorderless_ = false;
        LONG fullscreenOriginalStyle_ = 0; LONG fullscreenOriginalExStyle_ = 0; RECT fullscreenOriginalRect_ = { 0 }; bool fullscreenStateSaved_ = false; bool isFullscreen_ = false;
        int minWidth_ = 0; int minHeight_ = 0; int maxWidth_ = 0; int maxHeight_ = 0; std::atomic<bool> trackingMouse_{ false };
@@ -314,7 +318,7 @@ namespace pa2d {
        KeyCallback keyCb_; MouseCallback mouseCb_; ResizeCallback resizeCb_; CharCallback charCb_; FocusCallback focusCb_; CloseCallback closeCb_; MenuCallback menuCb_; FileListCallback dropCb_; FileListCallback clipboardFilesCb_;
        HWND nextClipboardViewer_ = nullptr; HDC persistentDC_ = nullptr;
     };
-    // ==================== å‡ ä½•æ ·å¼ ====================
+    // ==================== ¼¸ºÎÑùÊ½ ====================
     struct Style {
         Style(Color fill = 0, Color stroke = 0, float width = 1.0f, float radius = 0.0f,
             float opacity = 1.0f, bool drawArc = true, bool drawRadialEdges = true);
@@ -326,7 +330,7 @@ namespace pa2d {
         bool drawArc_;        Style& drawArc(bool v);
         bool drawRadialEdges_; Style& drawRadialEdges(bool v);
     };
-    // ==================== å‡ ä½•å¯¹è±¡ ====================
+    // ==================== ¼¸ºÎ¶ÔÏó ====================
     struct BoundingBox {
         float x, y;
         float width, height;
@@ -572,7 +576,7 @@ namespace pa2d {
     };
 #undef SHAPE_API
 #undef TO_POINTS
-    // ==================== è·¯å¾„æ„é€ æ–¹æ³• ====================
+    // ==================== Â·¾¶¹¹Ôì·½·¨ ====================
     class Path {
     private:
         class Builder {
@@ -611,8 +615,8 @@ namespace pa2d {
         static Builder from(float x, float y);
         static Builder from(const Point& start);
     };
-    // ==================== åº•å±‚å›¾å±‚ç®—æ³• ====================
-    // å›¾å½¢æ¸²æŸ“
+    // ==================== µ×²ãÍ¼²ãËã·¨ ====================
+    // Í¼ĞÎäÖÈ¾
     void drawLine(Buffer& buffer, float fx0, float fy0, float fx1, float fy1, const Color& color, float lineWidth = 1.0f);
     void drawPolyline(Buffer& buffer, const std::vector<Point>& points, const Color& color, float lineWidth = 1.0f, bool closed = false);
     void drawPolygon(Buffer& buffer, const std::vector<Point>& vertices, const Color& fillColor, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
@@ -625,12 +629,12 @@ namespace pa2d {
     void drawEllipse(Buffer& buffer, float cx, float cy, float width, float height, const Color& fillColor, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
     void drawEllipse(Buffer& buffer, float cx, float cy, float width, float height, float angle, const Color& fillColor, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f);
     void drawSector(Buffer& buffer, float cx, float cy, float radius, float startAngleDeg, float endAngleDeg, const Color& fillColor, const Color& strokeColor = 0, float strokeWidth = 1.0f, float opacity = 1.0f, bool drawArc = true, bool drawRadialEdges = true);
-    // ==================== åº•å±‚å›¾åƒç®—æ³• ====================
-    // å›¾åƒåŠ è½½
+    // ==================== µ×²ãÍ¼ÏñËã·¨ ====================
+    // Í¼Ïñ¼ÓÔØ
     bool load_image(Buffer& buffer, const char* filePath);
     bool load_image(Buffer& buffer, int resourceID);
     bool load_image(Buffer& buffer, void* hInstance, int resourceID);
-    // å›¾åƒå˜æ¢
+    // Í¼Ïñ±ä»»
     void drawScaledBuffer(Buffer& dest, const Buffer& src, float centerX, float centerY, float scaleX, float scaleY);
     void drawScaledBuffer(Buffer& dest, const Buffer& src, float centerX, float centerY, float scale);
     void drawRotatedBuffer(Buffer& dest, const Buffer& src, float centerX, float centerY, float rotation);
@@ -640,7 +644,7 @@ namespace pa2d {
     Buffer scaleBuffer(const Buffer& src, float factor);
     Buffer rotatedBuffer(const Buffer& src, float rotation);
     Buffer scaledRotatedBuffer(const Buffer& src, float scale = 1.0f, float rotation = 0.0f);
-    // å›¾åƒæ··åˆ
+    // Í¼Ïñ»ìºÏ
     void CopyBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
     void AlphaBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
     void AddBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
@@ -648,8 +652,8 @@ namespace pa2d {
     void ScreenBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
     void OverlayBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
     void DestAlphaBlend(const Buffer& src, Buffer& dst, int dstX = 0, int dstY = 0, int opacity = 255);
-    // ==================== åº•å±‚æ–‡å­—ç®—æ³• ====================
-    //æ–‡å­—æ¸²æŸ“å‡½æ•°
+    // ==================== µ×²ãÎÄ×ÖËã·¨ ====================
+    //ÎÄ×ÖäÖÈ¾º¯Êı
     bool drawText(Buffer& buffer, const std::string& text, float x, float y, const Color& color = Color(255, 255, 255, 255), int fontSize = 16, const std::string& fontName = "Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
     void drawTextInRect(Buffer& buffer, const std::string& text, float rectX, float rectY, float rectWidth, float rectHeight, const Color& color = Color(255, 255, 255, 255), int fontSize = 16, const std::string& fontName = "Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
     void drawTextFitRect(Buffer& buffer, const std::string& text, float rectX, float rectY, float rectWidth, float rectHeight, const Color& color = Color(255, 255, 255, 255), int preferredFontSize = 12, const std::string& fontName = "Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
@@ -658,8 +662,8 @@ namespace pa2d {
     void drawTextInRect(Buffer& buffer, const std::wstring& text, float rectX, float rectY, float rectWidth, float rectHeight, const Color& color = Color(255, 255, 255, 255), int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
     void drawTextFitRect(Buffer& buffer, const std::wstring& text, float rectX, float rectY, float rectWidth, float rectHeight, const Color& color = Color(255, 255, 255, 255), int preferredFontSize = 12, const std::wstring& fontName = L"Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
     void drawTextCentered(Buffer& buffer, const std::wstring& text, float centerX, float centerY, const Color& color = Color(255, 255, 255, 255), int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
-    // ==================== Style å­—é¢é‡æ‰©å±•(å¯å…³é—­) ====================
-#ifndef PA2D_DISABLE_LITERALS  // Style å­—é¢é‡å¼€å…³å®
+    // ==================== Style ×ÖÃæÁ¿À©Õ¹(¿É¹Ø±Õ) ====================
+#ifndef PA2D_DISABLE_LITERALS  // Style ×ÖÃæÁ¿¿ª¹Øºê
     struct StyleBuilder;
     struct TagBase {
         virtual ~TagBase() = default;
@@ -682,13 +686,13 @@ namespace pa2d {
         operator StyleBuilder() const; \
         operator Style() const;\
     };
-    TAG(Fill, uint32_t)      // å¡«å……é¢œè‰²
-    TAG(Stroke, uint32_t)    // æè¾¹é¢œè‰²
-    TAG(Width, float)       // çº¿å®½
-    TAG(Radius, float)      // åœ†è§’åŠå¾„
-    TAG(Opacity, float)     // ä¸é€æ˜åº¦
-    TAG(DrawArc, bool)      // æ˜¯å¦ç»˜åˆ¶å¼§çº¿
-    TAG(DrawRadialEdges, bool) // æ˜¯å¦ç»˜åˆ¶å¾„å‘è¾¹
+    TAG(Fill, uint32_t)      // Ìî³äÑÕÉ«
+    TAG(Stroke, uint32_t)    // Ãè±ßÑÕÉ«
+    TAG(Width, float)       // Ïß¿í
+    TAG(Radius, float)      // Ô²½Ç°ë¾¶
+    TAG(Opacity, float)     // ²»Í¸Ã÷¶È
+    TAG(DrawArc, bool)      // ÊÇ·ñ»æÖÆ»¡Ïß
+    TAG(DrawRadialEdges, bool) // ÊÇ·ñ»æÖÆ¾¶Ïò±ß
 #undef TAG
     namespace detail {uint32_t parseColorString(const char* str, size_t len);}
     inline FillTag operator"" _fill(unsigned long long hex) { return FillTag(static_cast<uint32_t>(hex)); }
@@ -706,7 +710,7 @@ namespace pa2d {
     extern const DrawRadialEdgesTag no_edges;
     StyleBuilder operator+(const StyleBuilder& builder, const TagBase& newTag);
 #endif // PA2D_DISABLE_LITERALS
-    // ==================== æ¨¡æ¿å‡½æ•°å®šä¹‰ ====================
+    // ==================== Ä£°åº¯Êı¶¨Òå ====================
     template<typename GeometryType>
     Canvas& Canvas::drawBatch(const std::vector<GeometryType>& geometries, const Style& style) {
         for (const auto& geometry : geometries)draw(geometry, style);
@@ -718,3 +722,9 @@ namespace pa2d {
         return *this;
     }
 }
+
+#ifdef _DEBUG
+#pragma comment(lib, "pa2dd.lib")
+#else
+#pragma comment(lib, "pa2d.lib")
+#endif
