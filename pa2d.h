@@ -11,7 +11,7 @@
  * Graphics: CPU software renderer with AVX2 optimization
  * Text:     Windows GDI (font rendering)
  *
- * Requires: C++11, Windows 7+, AVX2 CPU
+ * Requires: C++14, Windows 7+, AVX2 CPU
  * Build:    Compile with /arch:AVX2
  */
 #include <windows.h>
@@ -157,7 +157,7 @@ namespace pa2d {
         bool pressed;     // Press/release for buttons
         int wheelDelta;   // Wheel increment
     };
-    // 事件回调类型定义
+    // 浜嬩欢鍥炶皟绫诲瀷瀹氫箟
     using KeyCallback = std::function<void(const KeyEvent&)>;
     using MouseCallback = std::function<void(const MouseEvent&)>;
     using ResizeCallback = std::function<void(int, int)>;
@@ -272,7 +272,7 @@ namespace pa2d {
         static std::pair<int, int> getScreenSize();
         static std::pair<int, int> getWorkAreaSize();
         static double getDpiScale();
-        // 禁止拷贝
+        // 绂佹鎷疯礉
         Window(const Window&) = delete;
         Window& operator=(const Window&) = delete;
         Window(Window&&) = delete;
@@ -633,3 +633,4 @@ namespace pa2d {
     void textFitRect(Buffer&, const std::wstring&, float, float, float, float, const Color&, int, const std::wstring&, const FontStyle&);
     void textCentered(Buffer&, const std::wstring&, float, float, const Color&, int, const std::wstring&, const FontStyle&);
 }
+
