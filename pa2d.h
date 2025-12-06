@@ -13,7 +13,7 @@
 // Features:
 //   - CPU software renderer with AVX2 optimization
 //   - Windows GDI for font rendering
-//   - Pure C++11 implementation
+//   - Pure C++14 implementation
 //
 // Requirements:
 //   - C++14 or later
@@ -65,7 +65,6 @@ namespace pa2d {
         Buffer& operator=(Buffer&& other) noexcept;
         explicit operator bool() const { return color && width > 0 && height > 0; }
     };
-
     struct Point; class Points; class Line; class Ray; class Triangle; class Rect; class Polygon; class Circle; class Elliptic; class Sector; struct Style;
     // ==================== TEXT STYLES ====================
     enum class TextEncoding { ANSI, UTF8, UTF16, CURRENT };
@@ -103,6 +102,7 @@ namespace pa2d {
         Canvas& crop(int x, int y, int width, int height);
         Canvas& resize(int newWidth, int newHeight, uint32_t color = White);
         // ==================== BASIC SHAPES ====================
+        // Note: Anti-aliasing enabled by default for all shapes
         Canvas& line(float x0, float y0, float x1, float y1, const Color& color, float strokeWidth = 1.0f);
         Canvas& polyline(const std::vector<Point>& points, const Color& color, float strokeWidth = 1.0f, bool closed = false);
         Canvas& polygon(const std::vector<Point>& vertices, const Color& fillColor, const Color& strokeColor = None, float strokeWidth = 1.0f);
@@ -342,7 +342,7 @@ namespace pa2d {
         Point center() const;
         bool contains(float px, float py) const;
     };
-#define SHAPE_API(ClassName, PureVirtual) /* Shape unified interface macro (simplifies implementation) */ \
+#define SHAPE_API(ClassName, PureVirtual) /* Shape unified interface macro */ \
     virtual ClassName& translate(float dx, float dy) PureVirtual; /* Translate */ \
     virtual ClassName& translate(Point delta) PureVirtual; /* Vector translation */ \
     virtual ClassName& scale(float factor) PureVirtual; /* Uniform scaling */ \
@@ -356,7 +356,7 @@ namespace pa2d {
     virtual bool contains(Point point) const PureVirtual; /* Point containment test */ \
     virtual BoundingBox getBoundingBox() const PureVirtual; /* Bounding box */ \
     virtual Point getCenter() const PureVirtual /* Center point */
-#define TO_POINTS()  /* Shape to vector<Point> conversion macro (three ref types) */\
+#define TO_POINTS()  /* Shape to vector<Point> conversion macro */\
     operator std::vector<Point>()&; /* L-value conversion */ \
     operator std::vector<Point>() const&; /* Const conversion */ \
     operator std::vector<Point>()&& /* R-value conversion */
@@ -643,4 +643,3 @@ namespace pa2d {
     void textFitRect(Buffer&, const std::wstring&, float, float, float, float, const Color&, int, const std::wstring&, const FontStyle&);
     void textCentered(Buffer&, const std::wstring&, float, float, const Color&, int, const std::wstring&, const FontStyle&);
 }
-
