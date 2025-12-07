@@ -80,14 +80,17 @@ namespace pa2d {
     };
     struct Point; class Points; class Line; class Ray; class Triangle; class Rect; class Polygon; class Circle; class Elliptic; class Sector; struct Style;
     // ==================== TEXT STYLES ====================
-    // Windows GDI-based text rendering with optional anti-aliasing
-    // Note: For Chinese Windows systems, use ANSI or UTF8 with GBK compatibility
-    //       For international users, UTF8 is recommended (prefix strings with u8)
-    //       CURRENT parameter keeps current encoding unchanged, used for querying only
-    //       textEncoding() serves triple purpose: get/set/store encoding state
+    // Windows GDI text rendering (anti-aliasing optional)
+    void setTextAntiAliasing(bool enable);
+    // Encoding system:
+    // Default: ANSI, change with: textEncoding(encodingType)
+    // Rules:
+    // - ANSI mode → "text" (GBK file encoding)
+    // - UTF-8 mode → u8"text" (UTF-8 file encoding)
+    // - UTF-16 → L"text" (recommended)
+    // Important: Encoding mode must match string encoding!
     enum class TextEncoding { ANSI, UTF8, UTF16, CURRENT };
     TextEncoding textEncoding(TextEncoding newEncoding = TextEncoding::CURRENT);
-    void setTextAntiAliasing(bool enable);
     class FontStyle {
         int styleBits_; float italicAngle_, rotationAngle_;
     public:
@@ -689,5 +692,4 @@ namespace pa2d {
     void textInRect(Buffer&, const std::wstring&, float, float, float, float, const Color&, int, const std::wstring&, const FontStyle&);
     void textFitRect(Buffer&, const std::wstring&, float, float, float, float, const Color&, int, const std::wstring&, const FontStyle&);
     void textCentered(Buffer&, const std::wstring&, float, float, const Color&, int, const std::wstring&, const FontStyle&);
-
 }
