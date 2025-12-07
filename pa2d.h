@@ -1,14 +1,19 @@
 #pragma once
 // ============================================================
-// PA2D - Pure Software 2D Graphics Library for Windows
+// PA2D - CPU - Side Software 2D Graphics LibraryPure Software Rendering
 // ============================================================
 //
+// Copyright (c) 2025 PrismArch. All rights reserved.
+//
 // Repository: https://github.com/thss192/PA2D
-// Documentation: https://PrismArch.cn
+// Documentation: https://prismarch.cn
 // Contact: 1926224891@qq.com
 //
 // Version: 1.0.0 (Released: 2025-12-07)
 // Build Timestamp: Dec 7 2025 04:42:54
+//
+// License: Personal/educational use only.
+//          See documentation for full terms.
 //
 // Features:
 //   - CPU software renderer with AVX2 optimization
@@ -56,15 +61,15 @@ namespace pa2d {
     struct Buffer {
         Color* color;
         int width, height;
-        Buffer(int width = 0, int height = 0, const Color& init_color = None);
+        Buffer(int width = 0, int height = 0, const Color& color = None);
         Buffer(const Buffer& other);Buffer(Buffer&& other) noexcept;
         ~Buffer();
         size_t size() const { return static_cast<size_t>(width) * height; }
         Color& at(int x, int y);
         const Color& at(int x, int y) const;
         static void copy(Buffer& dest, const Buffer& src);
-        void resize(int newWidth, int newHeight, const Color& clear_color = None);
-        void clear(const Color& clear_color = 0);
+        void resize(int newWidth, int newHeight, const Color& color = None);
+        void clear(const Color& color = None);
         Buffer& operator=(const Buffer& other);
         Buffer& operator=(Buffer&& other) noexcept;
         explicit operator bool() const { return color && width > 0 && height > 0; }
@@ -112,13 +117,13 @@ namespace pa2d {
         Canvas& polygon(const std::vector<Point>& vertices, const Color& fillColor, const Color& strokeColor = None, float strokeWidth = 1.0f);
         Canvas& triangle(float ax, float ay, float bx, float by, float cx, float cy, const Color& fillColor, const Color& strokeColor = None, float strokeWidth = 1.0f);
         Canvas& rect(float x, float y, float width, float height, const Color& fillColor, const Color& strokeColor = None, float strokeWidth = 1.0f);
-        Canvas& rect(float centerX, float centerY, float width, float height, float angle, const Color& fillColor, const Color& strokeColor = None, float strokeWidth = 1.0f);
+        Canvas& rect(float cx, float cy, float width, float height, float angle, const Color& fillColor, const Color& strokeColor = None, float strokeWidth = 1.0f);
         Canvas& roundRect(float x, float y, float width, float height, const Color& fillColor, const Color& strokeColor = None, float cornerRadius = 0.0f, float strokeWidth = 1.0f);
-        Canvas& roundRect(float centerX, float centerY, float width, float height, float angle, const Color& fillColor, const Color& strokeColor = None, float cornerRadius = 0.0f, float strokeWidth = 1.0f);
-        Canvas& circle(float centerX, float centerY, float radius, const Color& fillColor, const Color& strokeColor = None, float strokeWidth = 1.0f);
+        Canvas& roundRect(float cx, float cy, float width, float height, float angle, const Color& fillColor, const Color& strokeColor = None, float cornerRadius = 0.0f, float strokeWidth = 1.0f);
+        Canvas& circle(float cx, float cy, float radius, const Color& fillColor, const Color& strokeColor = None, float strokeWidth = 1.0f);
         Canvas& ellipse(float cx, float cy, float width, float height, const Color& fillColor, const Color& strokeColor = None, float strokeWidth = 1.0f);
         Canvas& ellipse(float cx, float cy, float width, float height, float angle, const Color& fillColor, const Color& strokeColor = None, float strokeWidth = 1.0f);
-        Canvas& sector(float cx, float cy, float radius, float startAngleDeg, float endAngleDeg, const Color& fillColor, const Color& strokeColor = None, float strokeWidth = 1.0f, bool drawArc = true, bool drawRadialEdges = true);
+        Canvas& sector(float cx, float cy, float radius, float startAngleDeg, float endAngleDeg, const Color& fillColor, const Color& strokeColor = None, float strokeWidth = 1.0f, bool arc = true, bool edges = true);
         // ==================== OBJECT-ORIENTED DRAWING ====================
         Canvas& draw(const Points&, const Style&);
         Canvas& draw(const Line&, const Style&);
