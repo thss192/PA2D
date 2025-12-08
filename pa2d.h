@@ -39,13 +39,6 @@ namespace pa2d {
     // ==================== VERSION ====================
     // Get library version information
     const char* getVersion();
-    // ============= WINDOWS HANDLE TYPES =============
-    // These are defined as void* to avoid conflicts with windows.h
-    using HWND = void*;
-    using HMENU = void*;
-    using HICON = void*;
-    using HCURSOR = void*;
-    using COLORREF = unsigned long;
     // ==================== Color(ARGB) ====================
     struct Color {
         union { uint32_t data, argb; struct { uint8_t b, g, r, a; }; struct { uint32_t rgb : 24, _ : 8; }; };
@@ -85,9 +78,9 @@ namespace pa2d {
     // Encoding system:
     // Default: ANSI, change with: textEncoding(encodingType)
     // Rules:
-    // - ANSI mode â†’ "text" (GBK file encoding)
-    // - UTF-8 mode â†’ u8"text" (UTF-8 file encoding)
-    // - UTF-16 â†’ L"text" (recommended)
+    // - ANSI mode ¡ú "text" (GBK file encoding)
+    // - UTF-8 mode ¡ú u8"text" (UTF-8 file encoding)
+    // - UTF-16 ¡ú L"text" (recommended)
     // Important: Encoding mode must match string encoding!
     enum class TextEncoding { ANSI, UTF8, UTF16, CURRENT };
     TextEncoding textEncoding(TextEncoding newEncoding = TextEncoding::CURRENT);
@@ -97,9 +90,9 @@ namespace pa2d {
         static const FontStyle Regular, Bold, Italic, Underline, Strikeout;
         FontStyle italicAngle(float angle) const;
         FontStyle rotation(float angle) const;
-        FontStyle operator|(const FontStyle& other) const;
-        bool operator&(const FontStyle& other) const;
-        bool operator==(const FontStyle& other) const;
+        FontStyle operator|(const FontStyle&) const;
+        bool operator&(const FontStyle&) const;
+        bool operator==(const FontStyle&) const;
     };
     bool measureText(const std::wstring& text, int fontSize, const std::wstring& fontName, const FontStyle& style, int& width, int& height);
     bool measureText(const std::string& text, int fontSize, const std::string& fontName, const FontStyle& style, int& width, int& height);
@@ -114,7 +107,7 @@ namespace pa2d {
     public:
         Canvas();
         Canvas(int width, int height, Color background = White);
-        Canvas(const Buffer& buf); Canvas(Buffer&& buf);
+        Canvas(const Buffer& buffer); Canvas(Buffer&& buffer);
         Canvas(const Canvas& other); Canvas(Canvas&& other) noexcept;
         Canvas(const char* filePath); Canvas(int resourceID);
         int width() const; int height() const;
@@ -170,14 +163,14 @@ namespace pa2d {
         Canvas rotated(float rotation) const;
         Canvas transformed(float scale = 1.0f, float rotation = 0.0f) const;
         // ==================== TEXT RENDERING ====================
-        Canvas& text(const std::wstring& text, int x, int y, const Color& color = Black, int fontSize = 12, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
-        Canvas& textCentered(const std::wstring& text, int centerX, int centerY, const Color& color = Black, int fontSize = 12, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
-        Canvas& textInRect(const std::wstring& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = Black, int fontSize = 12, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
-        Canvas& textFitRect(const std::wstring& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = Black, int preferredFontSize = 12, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
-        Canvas& text(const std::string& text, int x, int y, const Color& color = Black, int fontSize = 12, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
-        Canvas& textCentered(const std::string& text, int centerX, int centerY, const Color& color = Black, int fontSize = 12, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
-        Canvas& textInRect(const std::string& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = Black, int fontSize = 12, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
-        Canvas& textFitRect(const std::string& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = Black, int preferredFontSize = 12, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
+        Canvas& text(const std::wstring& text, int x, int y, const Color& color = Black, int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
+        Canvas& text(const std::string& text, int x, int y, const Color& color = Black, int fontSize = 16, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
+        Canvas& textCentered(const std::wstring& text, int centerX, int centerY, const Color& color = Black, int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
+        Canvas& textCentered(const std::string& text, int centerX, int centerY, const Color& color = Black, int fontSize = 16, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
+        Canvas& textInRect(const std::wstring& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = Black, int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
+        Canvas& textInRect(const std::string& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = Black, int fontSize = 16, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
+        Canvas& textFitRect(const std::wstring& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = Black, int preferredFontSize = -1, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
+        Canvas& textFitRect(const std::string& text, int rectX, int rectY, int rectWidth, int rectHeight, const Color& color = Black, int preferredFontSize = -1, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
     };
     // ==================== WINDOW ====================
     // Thread-per-window architecture (background message loops)
@@ -204,6 +197,13 @@ namespace pa2d {
     using CloseCallback = std::function<bool()>;
     using MenuCallback = std::function<void(int)>;
     using FileListCallback = std::function<void(const std::vector<std::string>&)>;
+    // ============= WINDOWS HANDLE TYPES =============
+    // These are defined as void* to avoid conflicts with windows.h
+    using HWND = void*;
+    using HMENU = void*;
+    using HICON = void*;
+    using HCURSOR = void*;
+    using COLORREF = unsigned long;
     class Window {
     public:
         Window(int width, int height, const char* title);
@@ -349,7 +349,7 @@ inline pa2d::Style operator"" _r(long double r) { return pa2d::Style().radius(st
 inline pa2d::Style operator"" _r(unsigned long long r) { return pa2d::Style().radius(static_cast<float>(r)); }
 namespace pa2d {
     // Parse color string to ARGB value
-    // Supported formats: "#RGB", "#RRGGBB", "#AARRGGBB", "R,G,B", "A,R,G,B"
+    // Supported formats: "#RRGGBB", "#AARRGGBB", "R,G,B", "A,R,G,B"
     // Note: No other formats (color names, rgb(), etc.) are supported
     uint32_t parseColorString(const char* str, size_t len);
 }
@@ -418,8 +418,7 @@ namespace pa2d {
     };
     class Points : public Shape, public std::vector<Point> {
     public:
-        Points();
-        Points(int size);
+        Points();Points(int size);
         Points(const std::vector<Point>& points);
         Points(std::vector<Point>&& points);
         Points& operator=(const std::vector<Point>& points);
@@ -429,27 +428,21 @@ namespace pa2d {
     class Line : public Shape {
         Points points_;
     public:
-        Line();
-        Line(float x0, float y0, float x1, float y1);
+        Line();Line(float x0, float y0, float x1, float y1);
         Line(const Point& start, const Point& end);
-        Line& start(float x, float y);
-        Line& start(const Point& start);
-        Line& end(float x, float y);
-        Line& end(const Point& end);
-        Point& start(); const Point& start() const;
-        Point& end();   const Point& end() const;
+        Line& start(float x, float y); Line& start(const Point& start);
+        Line& end(float x, float y);   Line& end(const Point& end);
+        Point& start();                Point start() const;
+        Point& end();                  Point end() const;
         SHAPE_API(Line, override);
         TO_POINTS();
     };
     class Polygon : public Shape {
         Points points_;
-        static bool is_point_in_polygon_odd_even(const Point& P, const Points& vertices);
     public:
-        Polygon();
-        Polygon(const std::vector<Point>& points);
+        Polygon();Polygon(const std::vector<Point>& points);
         Polygon(std::vector<Point>&& points);
-        Points& getPoints();
-        const Points& getPoints() const;
+        Points& getPoints();    const Points& getPoints() const;
         Polygon& operator=(const std::vector<Point>& vec);
         Polygon& operator=(std::vector<Point>&& points);
         SHAPE_API(Polygon, override);
@@ -458,28 +451,17 @@ namespace pa2d {
     class Rect : public Shape {
         Points points_;
         Point center_;
-        float width_;
-        float height_;
-        float rotation_;
-        bool verticesDirty_ = true;
+        float width_,height_,rotation_,verticesDirty_;
     public:
-        Rect();
-        Rect(float centerX, float centerY, float width, float height, float rotation = 0.0f);
+        Rect();Rect(float centerX, float centerY, float width, float height, float rotation = 0.0f);
         Rect(const std::vector<Point>& points);
-        Rect& center(const Point& center);
-        Rect& center(float x, float y);
-        Rect& width(float width);
-        Rect& height(float height);
-        Rect& rotation(float rotation);
-        Point center() const;
-        Point& center();
-        float width() const;
-        float height() const;
-        float rotation() const;
-        auto begin();
-        auto end();
-        auto begin() const;
-        auto end() const;
+        Rect& center(const Point& center);  Rect& center(float x, float y);
+        Rect& width(float width);           float width() const;
+        Rect& height(float height);         float height() const;
+        Rect& rotation(float rotation);     float rotation() const;
+        Point& center();                    Point center() const;
+        auto begin();   auto begin() const;
+        auto end();     auto end() const;
         Rect& operator=(const std::vector<Point>& points);
         Point& operator[](size_t index);
         const Point& operator[](size_t index) const;
@@ -489,14 +471,11 @@ namespace pa2d {
     class Triangle : public Shape {
         Points points_;
     public:
-        Triangle();
-        Triangle(const Point& p0, const Point& p1, const Point& p2);
+        Triangle();Triangle(const Point& p0, const Point& p1, const Point& p2);
         Triangle(float px0, float py0, float px1, float py1, float px2, float py2);
         Triangle(const std::vector<Point>& points);
-        auto begin();
-        auto end();
-        auto begin() const;
-        auto end() const;
+        auto begin();   auto begin() const;
+        auto end();     auto end() const;
         Triangle& operator=(const std::vector<Point>& points);
         Point& operator[](size_t index);
         const Point& operator[](size_t index) const;
@@ -505,26 +484,16 @@ namespace pa2d {
     };
     class Elliptic : public Shape {
         Point center_;
-        float width_;
-        float height_;
-        float rotation_;
+        float width_,height_,rotation_;
     public:
-        Elliptic();
-        Elliptic(float centerX, float centerY, float width, float height, float rotation = 0.0f);
-        Elliptic& x(float x);
-        Elliptic& y(float y);
-        Elliptic& center(const Point& center);
-        Elliptic& center(float x, float y);
-        Elliptic& width(float width);
-        Elliptic& height(float height);
-        Elliptic& rotation(float rotation);
-        float x() const;
-        float y() const;
-        Point center() const;
-        Point& center();
-        float width() const;
-        float height() const;
-        float rotation() const;
+        Elliptic();Elliptic(float centerX, float centerY, float width, float height, float rotation = 0.0f);
+        Elliptic& x(float x);                   float x() const;
+        Elliptic& y(float y);                   float y() const;
+        Elliptic& center(const Point& center);  Elliptic& center(float x, float y);
+        Elliptic& width(float width);           float width() const;
+        Elliptic& height(float height);         float height() const;
+        Elliptic& rotation(float rotation);     float rotation() const;
+        Point& center();                        Point center() const;
         SHAPE_API(Elliptic, override);
         TO_POINTS();
         operator Point()&;
@@ -534,19 +503,13 @@ namespace pa2d {
         Point center_;
         float radius_;
     public:
-        Circle();
-        Circle(float centerX, float centerY, float radius);
+        Circle();Circle(float centerX, float centerY, float radius);
         Circle(const Point& center, float radius);
-        Circle& x(float x);
-        Circle& y(float y);
-        Circle& center(const Point& center);
-        Circle& center(float x, float y);
-        Circle& radius(float radius);
-        float x() const;
-        float y() const;
-        Point center() const;
-        Point& center();
-        float radius() const;
+        Circle& x(float x);                     float x() const;
+        Circle& y(float y);                     float y() const;
+        Circle& center(const Point& center);    Circle& center(float x, float y);
+        Circle& radius(float radius);           float radius() const;
+        Point& center();                        Point center() const;
         SHAPE_API(Circle, override);
         TO_POINTS();
         operator Point()&;
@@ -554,27 +517,17 @@ namespace pa2d {
     };
     class Sector : public Shape {
         Point center_;
-        float radius_;
-        float startAngle_;
-        float endAngle_;
+        float radius_,startAngle_,endAngle_;
     public:
-        Sector();
-        Sector(Point center, float radius, float startAngle = 0.0f, float endAngle = 360.0f);
+        Sector();Sector(Point center, float radius, float startAngle = 0.0f, float endAngle = 360.0f);
         Sector(float centerX, float centerY, float radius, float startAngle = 0.0f, float endAngle = 360.0f);
-        Sector& x(float x);
-        Sector& y(float y);
-        Sector& center(const Point& center);
-        Sector& center(float x, float y);
-        Sector& radius(float radius);
-        Sector& startAngle(float startAngle);
-        Sector& endAngle(float endAngle);
-        float x() const;
-        float y() const;
-        Point center() const;
-        Point& center();
-        float radius() const;
-        float startAngle() const;
-        float endAngle() const;
+        Sector& x(float x);                     float x() const;
+        Sector& y(float y);                     float y() const;
+        Sector& center(const Point& center);    Sector& center(float x, float y);
+        Sector& radius(float radius);           float radius() const;
+        Sector& startAngle(float startAngle);   float startAngle() const;
+        Sector& endAngle(float endAngle);       float endAngle() const;
+        Point& center();                        Point center() const;
         SHAPE_API(Sector, override);
         TO_POINTS();
         operator Point()&;
@@ -582,25 +535,17 @@ namespace pa2d {
     };
     class Ray : public Shape {
         Points points_;
-        float length_ = 0.0f;
-        float angle_ = 0.0f;
+        float length_,angle_;
     public:
-        Ray();
-        Ray(float x1, float y1, float x2, float y2);
+        Ray();Ray(float x1, float y1, float x2, float y2);
         Ray(const Point& start, const Point& end);
         Ray(const Point& start, float length = 0.0f, float angle = 0.0f);
-        Ray& start(float x, float y);
-        Ray& start(const Point& start);
-        Ray& end(float x, float y);
-        Ray& end(const Point& end);
-        Point& start();
-        Point& end();
-        const Point& start() const;
-        const Point& end() const;
-        Ray& angle(float angle);
-        Ray& length(float length);
-        float length() const;
-        float angle() const;
+        Ray& start(float x, float y);   Ray& start(const Point& start);
+        Ray& end(float x, float y);     Ray& end(const Point& end);
+        Point& start();                 Point start() const;
+        Point& end();                   Point end() const;
+        Ray& angle(float angle);        float angle() const;
+        Ray& length(float length);      float length() const;
         Ray& toEnd();
         Ray& stretch(float factor);
         Ray& spin(float degrees);
@@ -610,7 +555,10 @@ namespace pa2d {
 #undef SHAPE_API
 #undef TO_POINTS
     // ==================== PATH BUILDER ====================
-    // WRONG: auto result = pa2d::Path::from(x, y)...;  // Don't do this!
+    // Usage: Type var = Path::from(x,y).move(...)...;
+    // Must assign directly to concrete type (Polygon/Points/Line/etc.)
+    // Auto deduction is forbidden: auto var = Path::from(...)...;
+    // Correct example: Polygon poly = Path::from(0,0).move(10,0).move(0,10);
     class Path {
         class Builder {
             std::vector<Point> points_;
