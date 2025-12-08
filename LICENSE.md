@@ -25,7 +25,7 @@ You may NOT:
 Commercial use of the Software requires a separate commercial license. For licensing inquiries:
 
 - Email: 1926224891@qq.com (Subject: "PA2D Commercial License")
-- Website: https://prismarch.cn
+- Website: https://PrismArch.cn
 
 ### 4. Ownership
 PrismArch retains all title, copyright, and other intellectual property rights in the Software.
@@ -41,4 +41,4 @@ This license terminates automatically if you violate any of its terms.
 
 ---
 *Last Updated: December 2025*  
-*© 2025 PrismArch - https://prismarch.cn*
+*© 2025 PrismArch - https://PrismArch.cn*
