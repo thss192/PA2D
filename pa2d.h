@@ -8,8 +8,8 @@
 // Documentation: https://prismarch.cn
 // Contact: 1926224891@qq.com
 //
-// Version: 1.0.0 (Released: 2025-12-07)
-// Build Timestamp: Dec 7 2025 04:42:54
+// Version: 1.0.0 (Released: 2025-12-11)
+// Build Timestamp: Dec 11 2025 23:34:56
 //
 // License: Personal/educational use only.
 //          See documentation for full terms.
@@ -78,9 +78,9 @@ namespace pa2d {
     // Encoding system:
     // Default: ANSI, change with: textEncoding(encodingType)
     // Rules:
-    // - ANSI mode ¡ú "text" (GBK file encoding)
-    // - UTF-8 mode ¡ú u8"text" (UTF-8 file encoding)
-    // - UTF-16 ¡ú L"text" (recommended)
+    // - ANSI mode Â¡Ãº "text" (GBK file encoding)
+    // - UTF-8 mode Â¡Ãº u8"text" (UTF-8 file encoding)
+    // - UTF-16 Â¡Ãº L"text" (recommended)
     // Important: Encoding mode must match string encoding!
     enum class TextEncoding { ANSI, UTF8, UTF16, CURRENT };
     TextEncoding textEncoding(TextEncoding newEncoding = TextEncoding::CURRENT);
@@ -620,4 +620,5 @@ namespace pa2d {
     void textInRect(Buffer&, const std::wstring&, float, float, float, float, const Color&, int, const std::wstring&, const FontStyle&);
     void textFitRect(Buffer&, const std::wstring&, float, float, float, float, const Color&, int, const std::wstring&, const FontStyle&);
     void textCentered(Buffer&, const std::wstring&, float, float, const Color&, int, const std::wstring&, const FontStyle&);
+
 }
