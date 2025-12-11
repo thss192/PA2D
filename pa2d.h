@@ -121,36 +121,29 @@ namespace pa2d {
         Canvas& crop(int x, int y, int width, int height);
         Canvas& resize(int newWidth, int newHeight, uint32_t color = White);
         // ==================== BASIC SHAPES ====================
-        Canvas& line(float x0, float y0, float x1, float y1, const Color& color, float strokeWidth = 1.0f);
-        Canvas& polyline(const std::vector<Point>& points, const Color& color, float strokeWidth = 1.0f, bool closed = false);
-        Canvas& polygon(const std::vector<Point>& vertices, const Color& fillColor, const Color& strokeColor = None, float strokeWidth = 1.0f);
-        Canvas& triangle(float ax, float ay, float bx, float by, float cx, float cy, const Color& fillColor, const Color& strokeColor = None, float strokeWidth = 1.0f);
-        Canvas& rect(float x, float y, float width, float height, const Color& fillColor, const Color& strokeColor = None, float strokeWidth = 1.0f);
-        Canvas& rect(float cx, float cy, float width, float height, float angle, const Color& fillColor, const Color& strokeColor = None, float strokeWidth = 1.0f);
-        Canvas& roundRect(float x, float y, float width, float height, const Color& fillColor, const Color& strokeColor = None, float cornerRadius = 0.0f, float strokeWidth = 1.0f);
-        Canvas& roundRect(float cx, float cy, float width, float height, float angle, const Color& fillColor, const Color& strokeColor = None, float cornerRadius = 0.0f, float strokeWidth = 1.0f);
-        Canvas& circle(float cx, float cy, float radius, const Color& fillColor, const Color& strokeColor = None, float strokeWidth = 1.0f);
-        Canvas& ellipse(float cx, float cy, float width, float height, const Color& fillColor, const Color& strokeColor = None, float strokeWidth = 1.0f);
-        Canvas& ellipse(float cx, float cy, float width, float height, float angle, const Color& fillColor, const Color& strokeColor = None, float strokeWidth = 1.0f);
-        Canvas& sector(float cx, float cy, float radius, float startAngleDeg, float endAngleDeg, const Color& fillColor, const Color& strokeColor = None, float strokeWidth = 1.0f, bool arc = true, bool edges = true);
+        Canvas& line(float x0, float y0, float x1, float y1, const Style& style);
+        Canvas& polyline(const std::vector<Point>& points, const Style& style, bool closed = false);
+        Canvas& polygon(const std::vector<Point>& vertices, const Style& style);
+        Canvas& triangle(float ax, float ay, float bx, float by, float cx, float cy, const Style& style);
+        Canvas& rect(float x, float y, float width, float height, const Style& style);
+        Canvas& rect(float centerX, float centerY, float width, float height, float angle, const Style& style);
+        Canvas& roundRect(float x, float y, float width, float height, const Style& style);
+        Canvas& roundRect(float centerX, float centerY, float width, float height, float angle, const Style& style);
+        Canvas& circle(float centerX, float centerY, float radius, const Style& style);
+        Canvas& ellipse(float cx, float cy, float width, float height, const Style& style);
+        Canvas& ellipse(float cx, float cy, float width, float height, float angle, const Style& style);
+        Canvas& sector(float cx, float cy, float radius, float startAngleDeg, float endAngleDeg, const Style& style);
         // ==================== OBJECT-ORIENTED DRAWING ====================
-        Canvas& draw(const Points&, const Style&);
-        Canvas& draw(const Line&, const Style&);
-        Canvas& draw(const Ray&, const Style&);
-        Canvas& draw(const Rect&, const Style&);
-        Canvas& draw(const Triangle&, const Style&);
-        Canvas& draw(const Polygon&, const Style&);
-        Canvas& draw(const Circle&, const Style&);
-        Canvas& draw(const Elliptic&, const Style&);
-        Canvas& draw(const Sector&, const Style&);
+#define draw(Class)  Canvas& draw(const Class&, const Style&);
+        draw(Points)draw(Line)draw(Ray)
+        draw(Rect)draw(Triangle)draw(Polygon)
+        draw(Circle)draw(Elliptic)draw(Sector)
+#undef draw
         // ==================== IMAGE BLENDING ====================
-        Canvas& alphaBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
-        Canvas& addBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
-        Canvas& multiplyBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
-        Canvas& screenBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
-        Canvas& overlayBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
-        Canvas& destAlphaBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
-        Canvas& copyBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
+#define blend(Mode) Canvas& Mode##Blend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
+        blend(copy)blend(alpha)blend(add)blend(multiply)
+        blend(screen)blend(overlay)blend(destAlpha)
+#undef blend
         // ==================== IMAGE TRANSFORM DRAWING ====================
         Canvas& draw(const Canvas& other, int x = 0, int y = 0, int alpha = 255);
         Canvas& drawRotated(const Canvas& src, float centerX, float centerY, float rotation = 0.0f);
@@ -206,7 +199,11 @@ namespace pa2d {
     using COLORREF = unsigned long;
     class Window {
     public:
-        Window(int width, int height, const char* title);
+        Window(int width=-1, int height=-1, const char* title="PA2D Window");
+        Window(const Window&);
+        Window(Window&&);
+        Window& operator=(const Window&);
+        Window& operator=(Window&&);
         ~Window();
         // ==================== PUBLIC MEMBERS ====================
         HWND hwnd_ = nullptr;
@@ -311,11 +308,6 @@ namespace pa2d {
         static std::pair<int, int> getScreenSize();
         static std::pair<int, int> getWorkAreaSize();
         static double getDpiScale();
-        // Non-copyable
-        Window(const Window&) = delete;
-        Window& operator=(const Window&) = delete;
-        Window(Window&&) = delete;
-        Window& operator=(Window&&) = delete;
     private:
         struct Impl;
         Impl* pImpl_;
@@ -341,12 +333,12 @@ namespace pa2d {
 // Disable literals with: #define PA2D_DISABLE_LITERALS before including pa2d.h
 extern const pa2d::Style arc;    extern const pa2d::Style no_arc;     // Sector arc control
 extern const pa2d::Style edges;  extern const pa2d::Style no_edges;   // Sector edges control
-inline pa2d::Style operator"" _fill(unsigned long long hex) { return pa2d::Style().fill(static_cast<uint32_t>(hex)); }
-inline pa2d::Style operator"" _stroke(unsigned long long hex) { return pa2d::Style().stroke(static_cast<uint32_t>(hex)); }
-inline pa2d::Style operator"" _w(long double w) { return pa2d::Style().width(static_cast<float>(w)); }
-inline pa2d::Style operator"" _w(unsigned long long w) { return pa2d::Style().width(static_cast<float>(w)); }
-inline pa2d::Style operator"" _r(long double r) { return pa2d::Style().radius(static_cast<float>(r)); }
-inline pa2d::Style operator"" _r(unsigned long long r) { return pa2d::Style().radius(static_cast<float>(r)); }
+inline pa2d::Style operator"" _fill(unsigned long long hex) { return pa2d::Style().fill((uint32_t)hex); }
+inline pa2d::Style operator"" _stroke(unsigned long long hex) { return pa2d::Style().stroke((uint32_t)hex); }
+inline pa2d::Style operator"" _w(long double w) { return pa2d::Style().width((float)w); }
+inline pa2d::Style operator"" _w(unsigned long long w) { return pa2d::Style().width((float)w); }
+inline pa2d::Style operator"" _r(long double r) { return pa2d::Style().radius((float)r); }
+inline pa2d::Style operator"" _r(unsigned long long r) { return pa2d::Style().radius((float)r); }
 namespace pa2d {
     // Parse color string to ARGB value
     // Supported formats: "#RRGGBB", "#AARRGGBB", "R,G,B", "A,R,G,B"
@@ -402,15 +394,14 @@ namespace pa2d {
     virtual ClassName& rotateOnSelf(float angleDegrees) PureVirtual; \
     virtual bool contains(Point point) const PureVirtual; \
     virtual BoundingBox getBoundingBox() const PureVirtual; \
-    virtual Point getCenter() const PureVirtual
+    virtual Point getCenter() const PureVirtual;
 #define TO_POINTS() \
     operator std::vector<Point>()&; \
     operator std::vector<Point>() const&; \
-    operator std::vector<Point>()&&
+    operator std::vector<Point>()&&;
     class Shape {
     public:
         enum class GeometryType { POINTS, LINE, POLYGON, RECT, TRIANGLE, CIRCLE, ELLIPTIC, SECTOR, RAY };
-        virtual ~Shape() = default;
         GeometryType getType() const { return type; }
         SHAPE_API(Shape, = 0);
     private:
@@ -423,7 +414,7 @@ namespace pa2d {
         Points(std::vector<Point>&& points);
         Points& operator=(const std::vector<Point>& points);
         Points& operator=(std::vector<Point>&& points);
-        SHAPE_API(Points, override);
+        SHAPE_API(Points, override)
     };
     class Line : public Shape {
         Points points_;
@@ -434,8 +425,8 @@ namespace pa2d {
         Line& end(float x, float y);   Line& end(const Point& end);
         Point& start();                Point start() const;
         Point& end();                  Point end() const;
-        SHAPE_API(Line, override);
-        TO_POINTS();
+        SHAPE_API(Line, override)
+        TO_POINTS()
     };
     class Polygon : public Shape {
         Points points_;
@@ -445,8 +436,8 @@ namespace pa2d {
         Points& getPoints();    const Points& getPoints() const;
         Polygon& operator=(const std::vector<Point>& vec);
         Polygon& operator=(std::vector<Point>&& points);
-        SHAPE_API(Polygon, override);
-        TO_POINTS();
+        SHAPE_API(Polygon, override)
+        TO_POINTS()
     };
     class Rect : public Shape {
         Points points_;
@@ -465,8 +456,8 @@ namespace pa2d {
         Rect& operator=(const std::vector<Point>& points);
         Point& operator[](size_t index);
         const Point& operator[](size_t index) const;
-        SHAPE_API(Rect, override);
-        TO_POINTS();
+        SHAPE_API(Rect, override)
+        TO_POINTS()
     };
     class Triangle : public Shape {
         Points points_;
@@ -479,8 +470,8 @@ namespace pa2d {
         Triangle& operator=(const std::vector<Point>& points);
         Point& operator[](size_t index);
         const Point& operator[](size_t index) const;
-        SHAPE_API(Triangle, override);
-        TO_POINTS();
+        SHAPE_API(Triangle, override)
+        TO_POINTS()
     };
     class Elliptic : public Shape {
         Point center_;
@@ -494,8 +485,8 @@ namespace pa2d {
         Elliptic& height(float height);         float height() const;
         Elliptic& rotation(float rotation);     float rotation() const;
         Point& center();                        Point center() const;
-        SHAPE_API(Elliptic, override);
-        TO_POINTS();
+        SHAPE_API(Elliptic, override)
+        TO_POINTS()
         operator Point()&;
         operator Point() const&;
     };
@@ -510,8 +501,8 @@ namespace pa2d {
         Circle& center(const Point& center);    Circle& center(float x, float y);
         Circle& radius(float radius);           float radius() const;
         Point& center();                        Point center() const;
-        SHAPE_API(Circle, override);
-        TO_POINTS();
+        SHAPE_API(Circle, override)
+        TO_POINTS()
         operator Point()&;
         operator Point() const&;
     };
@@ -528,8 +519,8 @@ namespace pa2d {
         Sector& startAngle(float startAngle);   float startAngle() const;
         Sector& endAngle(float endAngle);       float endAngle() const;
         Point& center();                        Point center() const;
-        SHAPE_API(Sector, override);
-        TO_POINTS();
+        SHAPE_API(Sector, override)
+        TO_POINTS()
         operator Point()&;
         operator Point() const&;
     };
@@ -549,16 +540,12 @@ namespace pa2d {
         Ray& toEnd();
         Ray& stretch(float factor);
         Ray& spin(float degrees);
-        SHAPE_API(Ray, override);
-        TO_POINTS();
+        SHAPE_API(Ray, override)
+        TO_POINTS()
     };
 #undef SHAPE_API
 #undef TO_POINTS
     // ==================== PATH BUILDER ====================
-    // Usage: Type var = Path::from(x,y).move(...)...;
-    // Must assign directly to concrete type (Polygon/Points/Line/etc.)
-    // Auto deduction is forbidden: auto var = Path::from(...)...;
-    // Correct example: Polygon poly = Path::from(0,0).move(10,0).move(0,10);
     class Path {
         class Builder {
             std::vector<Point> points_;
@@ -568,19 +555,18 @@ namespace pa2d {
             Builder& operator=(const Builder&) = delete;
             Builder(Builder&&) = default;
             Builder& operator=(Builder&&) = default;
-            Builder& move(float dx, float dy);
-            Builder& moveTo(float x, float y);
-            Builder& translate(float dx, float dy);
-            Builder& scale(float factor);
-            Builder& scale(float factorX, float factorY);
-            Builder& scaleOnSelf(float factor);
-            Builder& scaleOnSelf(float factorX, float factorY);
-            Builder& rotate(float angleDegrees);
-            Builder& rotate(float angleDegrees, float centerX, float centerY);
-            Builder& rotateOnSelf(float angleDegrees);
-            operator std::vector<Point>()&&;
-            operator std::vector<Point>()&;
-            operator std::vector<Point>() const& = delete;
+            Builder move(float dx, float dy)&&;
+            Builder moveTo(float x, float y)&&;
+            Builder translate(float dx, float dy)&&;
+            Builder scale(float factor)&&;
+            Builder scale(float factorX, float factorY)&&;
+            Builder scaleOnSelf(float factor)&&;
+            Builder scaleOnSelf(float factorX, float factorY)&&;
+            Builder rotate(float angleDegrees)&&;
+            Builder rotate(float angleDegrees, float centerX, float centerY)&&;
+            Builder rotateOnSelf(float angleDegrees)&&;
+            template<typename T>
+            T to()&& {return T(std::move(points_));}
             template<typename T>
             operator T()&& { return T(std::move(points_)); }
             template<typename T>
@@ -589,9 +575,6 @@ namespace pa2d {
             operator T() const& = delete;
         };
         Path() = delete;
-        ~Path() = delete;
-        Path(const Path&) = delete;
-        Path& operator=(const Path&) = delete;
     public:
         static Builder from(float x, float y);
         static Builder from(const Point& start);
@@ -625,13 +608,10 @@ namespace pa2d {
     Buffer rotated(const Buffer&, float);
     Buffer transformed(const Buffer&, float, float);
     Buffer transformed(const Buffer&, float, float, float);
-    void copyBlend(const Buffer&, Buffer&, int, int, int);
-    void alphaBlend(const Buffer&, Buffer&, int, int, int);
-    void addBlend(const Buffer&, Buffer&, int, int, int);
-    void multiplyBlend(const Buffer&, Buffer&, int, int, int);
-    void screenBlend(const Buffer&, Buffer&, int, int, int);
-    void overlayBlend(const Buffer&, Buffer&, int, int, int);
-    void destAlphaBlend(const Buffer&, Buffer&, int, int, int);
+#define blend(Mode) void Mode##Blend(const Buffer&, Buffer&, int, int, int);
+    blend(copy)blend(alpha)blend(add)blend(multiply)
+    blend(screen)blend(overlay)blend(destAlpha)
+#undef blend
     bool text(Buffer&, const std::string&, float, float, const Color&, int, const std::string&, const FontStyle&);
     void textInRect(Buffer&, const std::string&, float, float, float, float, const Color&, int, const std::string&, const FontStyle&);
     void textFitRect(Buffer&, const std::string&, float, float, float, float, const Color&, int, const std::string&, const FontStyle&);
