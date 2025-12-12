@@ -1,15 +1,14 @@
 #pragma once
-// ======================================================================
-// PA2D - CPU-Side Software 2D Graphics Library | Pure Software Rendering
-// ======================================================================
+// ============================================
+// PA2D - CPU-Side Software 2D Graphics Library
+// ============================================
 // Copyright (c) 2025 PrismArch. All rights reserved.
 //
 // Repository: https://github.com/thss192/PA2D
-// Documentation: https://prismarch.cn
+// Documentation: https://PrismArch.cn
 // Contact: 1926224891@qq.com
 //
-// Version: 1.0.0 (Released: 2025-12-11)
-// Build Timestamp: Dec 11 2025 23:34:56
+// Version: 1.0.0 (Released: 2025-12-13)
 //
 // License: Personal/educational use only.
 //          See documentation for full terms.
@@ -17,28 +16,37 @@
 // Features:
 //   - CPU software renderer with AVX2 optimization
 //   - Windows GDI for font rendering
-//   - Pure C++14 implementation
-//
+//   - Thread-per-window architecture
+//   - Multi-window support (copy/move semantics)
+//   - Anti-aliased rendering by default
+// 
 // Requirements:
 //   - C++14 or later
 //   - Windows 7 or newer
 //   - AVX2-capable CPU
 //   - Compile with /arch:AVX2
-// ======================================================================
-#include <vector>
-#include <array> 
-#include <cstdint>
-#include <string>
-#include <functional>
-#pragma comment(lib, "gdiplus.lib")
+// ============================================
+#ifdef _WIN32
+#pragma comment(lib, "ole32.lib")        // COM object creation (WIC factory initialization)
+#pragma comment(lib, "WindowsCodecs.lib")// Windows Imaging Component (PNG/JPEG decoding)
+#pragma comment(lib, "gdiplus.lib")      // High-quality font rendering (anti-aliasing, font caching)
+#pragma comment(lib, "user32.lib")       // Window management, message processing, input events
+#pragma comment(lib, "gdi32.lib")        // Screen rendering, device contexts, bitmap operations
+#pragma comment(lib, "shell32.lib")      // File drag-drop, clipboard chain, Shell integration
+#endif
 #ifdef _DEBUG
 #pragma comment(lib, "pa2dd.lib")
 #else
 #pragma comment(lib, "pa2d.lib")
 #endif
+#include <utility> 
+#include <vector>
+#include <array> 
+#include <cstdint>
+#include <string>
+#include <functional>
 namespace pa2d {
     // ==================== VERSION ====================
-    // Get library version information
     const char* getVersion();
     // ==================== Color(ARGB) ====================
     struct Color {
@@ -46,11 +54,11 @@ namespace pa2d {
         Color() :data(0) {} Color(uint32_t argb) :data(argb) {} Color(uint8_t a, uint8_t r, uint8_t g, uint8_t b) :a(a), r(r), g(g), b(b) {}
         Color(uint8_t alpha, const Color& base) : data((static_cast<uint32_t>(alpha) << 24) | (base.data & 0x00FFFFFF)) {}
         operator uint32_t() const { return data; }
-    };
-    const Color White = 0xFFFFFFFF, Black = 0xFF000000, None = 0x00000000;
-    const Color Red = 0xFFFF0000, Green = 0xFF00FF00, Blue = 0xFF0000FF;
-    const Color Cyan = 0xFF00FFFF, Magenta = 0xFFFF00FF, Yellow = 0xFFFFFF00;
-    const Color Gray = 0xFF808080, LightGray = 0xFFC0C0C0, DarkGray = 0xFF404040;
+    };extern const Color
+        White, Black,     None,
+        Red,   Green,     Blue,
+        Cyan,  Magenta,   Yellow,
+        Gray,  LightGray, DarkGray;
     // ==================== BUFFER ====================
     // Pixel buffer container with SIMD-optimized operations
     // Note: For best performance, access color pointer directly instead of using at()
@@ -72,18 +80,52 @@ namespace pa2d {
         Buffer& operator=(Buffer&& other) noexcept;
         explicit operator bool() const { return color && width > 0 && height > 0; }
     };
-    struct Point; class Points; class Line; class Ray; class Triangle; class Rect; class Polygon; class Circle; class Elliptic; class Sector; struct Style;
+    // ==================== BUFFER API ====================
+    // Direct buffer manipulation
+    // Canvas acts as a proxy layer over these functions - each Canvas contains an internal Buffer
+    struct Point;
+    void line(Buffer&, float, float, float, float, const Color&, float);
+    void polyline(Buffer&, const std::vector<Point>&, const Color&, float, bool);
+    void polygon(Buffer&, const std::vector<Point>&, const Color&, const Color&, float);
+    void triangle(Buffer&, float, float, float, float, float, float, const Color&, const Color&, float);
+    void rect(Buffer&, float, float, float, float, const Color&, const Color&, float);
+    void rect(Buffer&, float, float, float, float, float, const Color&, const Color&, float);
+    void roundRect(Buffer&, float, float, float, float, const Color&, const Color&, float, float);
+    void roundRect(Buffer&, float, float, float, float, float, const Color&, const Color&, float, float);
+    void circle(Buffer&, float, float, float, const Color&, const Color&, float);
+    void ellipse(Buffer&, float, float, float, float, const Color&, const Color&, float);
+    void ellipse(Buffer&, float, float, float, float, float, const Color&, const Color&, float);
+    void sector(Buffer&, float, float, float, float, float, const Color&, const Color&, float, bool, bool);
+    bool loadImage(Buffer&, const char*);
+    bool loadImage(Buffer&, int);
+    bool loadImage(Buffer&, void*, int);
+    void drawScaled(Buffer&, const Buffer&, float, float, float, float);
+    void drawScaled(Buffer&, const Buffer&, float, float, float);
+    void drawRotated(Buffer&, const Buffer&, float, float, float);
+    void drawTransformed(Buffer&, const Buffer&, float, float, float, float);
+    void drawTransformed(Buffer&, const Buffer&, float, float, float, float, float);
+    Buffer crop(const Buffer&, int, int, int, int);
+    Buffer scaled(const Buffer&, float, float);
+    Buffer scaled(const Buffer&, float);
+    Buffer rotated(const Buffer&, float);
+    Buffer transformed(const Buffer&, float, float);
+    Buffer transformed(const Buffer&, float, float, float);
+    void alphaBlend(const Buffer&, Buffer&, int, int, int);
+    void copyBlend(const Buffer&, Buffer&, int, int, int);
+    void addBlend(const Buffer&, Buffer&, int, int, int);
+    void multiplyBlend(const Buffer&, Buffer&, int, int, int);
+    void screenBlend(const Buffer&, Buffer&, int, int, int);
+    void overlayBlend(const Buffer&, Buffer&, int, int, int);
+    void destAlphaBlend(const Buffer&, Buffer&, int, int, int);
     // ==================== TEXT STYLES ====================
     // Windows GDI text rendering (anti-aliasing optional)
     void setTextAntiAliasing(bool enable);
-    // Encoding system:
-    // Default: ANSI, change with: textEncoding(encodingType)
-    // Rules:
-    // - ANSI mode ¡ú "text" (GBK file encoding)
-    // - UTF-8 mode ¡ú u8"text" (UTF-8 file encoding)
-    // - UTF-16 ¡ú L"text" (recommended)
-    // Important: Encoding mode must match string encoding!
-    enum class TextEncoding { ANSI, UTF8, UTF16, CURRENT };
+    // String encoding configuration
+    // Principle: Controls std::string to std::wstring conversion method
+    // ANSI: Convert using system local encoding (e.g., GBK). Default ANSI is suitable for Chinese users
+    // UTF8: Convert using UTF-8 encoding (source code needs to be saved with u8"text")
+    // CURRENT: Get current setting only
+    enum class TextEncoding { ANSI, UTF8, CURRENT };
     TextEncoding textEncoding(TextEncoding newEncoding = TextEncoding::CURRENT);
     class FontStyle {
         int styleBits_; float italicAngle_, rotationAngle_;
@@ -95,16 +137,255 @@ namespace pa2d {
         bool operator&(const FontStyle&) const;
         bool operator==(const FontStyle&) const;
     };
-    bool measureText(const std::wstring& text, int fontSize, const std::wstring& fontName, const FontStyle& style, int& width, int& height);
-    bool measureText(const std::string& text, int fontSize, const std::string& fontName, const FontStyle& style, int& width, int& height);
-    int calculateFontSize(const std::wstring& text, float maxWidth, float maxHeight, int preferredFontSize, const std::wstring& fontName = L"Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
-    int calculateFontSize(const std::string& text, float maxWidth, float maxHeight, int preferredFontSize, const std::string& fontName = "Microsoft YaHei", const FontStyle& style = FontStyle::Regular);
+    bool text(Buffer&, const std::wstring&, float, float, const Color&, int, const std::wstring&, const FontStyle&);
+    bool text(Buffer&, const std::string&, float, float, const Color&, int, const std::string&, const FontStyle&);
+    bool textInRect(Buffer&, const std::wstring&, float, float, float, float, const Color&, int, const std::wstring&, const FontStyle&);
+    bool textInRect(Buffer&, const std::string&, float, float, float, float, const Color&, int, const std::string&, const FontStyle&);
+    bool textFitRect(Buffer&, const std::wstring&, float, float, float, float, const Color&, int, const std::wstring&, const FontStyle&);
+    bool textFitRect(Buffer&, const std::string&, float, float, float, float, const Color&, int, const std::string&, const FontStyle&);
+    bool textCentered(Buffer&, const std::wstring&, float, float, const Color&, int, const std::wstring&, const FontStyle&);
+    bool textCentered(Buffer&, const std::string&, float, float, const Color&, int, const std::string&, const FontStyle&);
+    // ==================== GEOMETRY STYLE ====================
+    // Fluent-style drawing configuration with user-defined literals
+    // Use: Style().fill(Red).stroke(Black).width(2.0f) 
+    // Or:  0xffff0000_fill + 0xff000000_stroke + 2.0_w + 5.0_r
+    struct Style {
+        Color fillColor_ = 0;       Style& fill(Color v) { fillColor_ = v; return *this; }
+        Color strokeColor_ = 0;     Style& stroke(Color v) { strokeColor_ = v; return *this; }
+        float strokeWidth_ = 1.0f;  Style& width(float v) { strokeWidth_ = v; return *this; }
+        float radius_ = 0.0f;       Style& radius(float v) { radius_ = v; return *this; }
+        bool arc_ = true;           Style& arc(bool v) { arc_ = v; return *this; }
+        bool edges_ = true;         Style& edges(bool v) { edges_ = v; return *this; }
+        Style() = default;
+        Style(Color fill, Color stroke = 0, float width = 1.0f, float radius = 0.0f, bool Arc = true, bool edges = true);
+        Style operator+(const Style& other) const;
+        Style& operator+=(const Style& other);
+    };
+    // ==================== GEOMETRY OBJECTS ====================
+    // Geometry objects with unified transformation interface
+    struct Point {
+        float x, y;
+        Point() :x(0), y(0) {}; Point(float x, float y);
+        Point operator+(const Point&) const; Point& operator+=(const Point&);
+        Point operator-(const Point&) const; Point& operator-=(const Point&);
+        Point operator-() const; bool operator==(const Point&) const; bool operator!=(const Point&) const;
+        Point& operator+=(float); Point operator+(float) const;
+        Point& operator-=(float); Point operator-(float) const;
+        Point& operator*=(float); Point operator*(float) const;
+        Point& operator/=(float); Point operator/(float) const;
+        friend Point operator*(float, const Point&);
+        Point& translate(float dx, float dy);
+        Point& scale(float factorX, float factorY); Point& scale(float factor);
+        Point& rotate(float angleDegrees, float centerX = 0, float centerY = 0);
+    };
+    struct BoundingBox {
+        float x, y;
+        float width, height;
+        BoundingBox(float x = 0, float y = 0, float width = 0, float height = 0);
+        float left() const;
+        float right() const;
+        float bottom() const;
+        float top() const;
+        Point center() const;
+        bool contains(float px, float py) const;
+    };
+    // ==================== SHAPE SYSTEM MACROS ====================
+    // Helper macros for uniform shape interface declaration
+    // Note: Geometric transformations default to origin (0,0) 
+    //       Use OnSelf variants for transformations around shape's own center
+#define PA2D_SHAPE_API(ClassName, PureVirtual) \
+    virtual ClassName& translate(float dx, float dy) PureVirtual; \
+    virtual ClassName& translate(Point delta) PureVirtual; \
+    virtual ClassName& scale(float factor) PureVirtual; \
+    virtual ClassName& scale(float factorX, float factorY) PureVirtual; \
+    virtual ClassName& scaleOnSelf(float factorX, float factorY) PureVirtual; \
+    virtual ClassName& scaleOnSelf(float factor) PureVirtual; \
+    virtual ClassName& rotate(float angleDegrees, float centerX, float centerY) PureVirtual; \
+    virtual ClassName& rotate(float angleDegrees, Point center) PureVirtual; \
+    virtual ClassName& rotate(float angleDegrees) PureVirtual; \
+    virtual ClassName& rotateOnSelf(float angleDegrees) PureVirtual; \
+    virtual bool contains(Point point) const PureVirtual; \
+    virtual BoundingBox getBoundingBox() const PureVirtual; \
+    virtual Point getCenter() const PureVirtual;
+    class Shape {
+    public:
+        enum class GeometryType { POINTS, LINE, POLYGON, RECT, TRIANGLE, CIRCLE, ELLIPTIC, SECTOR, RAY };
+        GeometryType getType() const { return type; }
+        PA2D_SHAPE_API(Shape, = 0);
+    private:
+        GeometryType type = GeometryType::POINTS;
+    };
+    struct Points : public Shape {
+        std::vector<Point> points;
+        Points(); Points(int size);
+        Points(const std::vector<Point>& points);
+        Points(std::vector<Point>&& points);
+        Points& operator=(const std::vector<Point>& points);
+        Points& operator=(std::vector<Point>&& points);
+        PA2D_SHAPE_API(Points, override)
+        operator std::vector<Point>() const;
+        operator const std::vector<Point>& () const;
+    };
+    class Line : public Shape {
+        Point start_, end_;
+    public:
+        Line(); Line(float x0, float y0, float x1, float y1);
+        Line(const Point& start, const Point& end);
+        Line& start(float x, float y); Line& start(const Point& start);
+        Line& end(float x, float y);   Line& end(const Point& end);
+        Point& start();                Point start() const;
+        Point& end();                  Point end() const;
+        PA2D_SHAPE_API(Line, override)
+        operator std::vector<Point>() const;
+    };
+    class Polygon : public Shape {
+        Points points_;
+    public:
+        Polygon(); Polygon(const std::vector<Point>& points);
+        Polygon(std::vector<Point>&& points);
+        std::vector<Point>& getPoints();    const std::vector<Point>& getPoints() const;
+        Polygon& operator=(const std::vector<Point>& vec);
+        Polygon& operator=(std::vector<Point>&& points);
+        PA2D_SHAPE_API(Polygon, override)
+        operator std::vector<Point>() const;
+        operator const std::vector<Point>& () const;
+    };
+    class Rect : public Shape {
+        Point center_;
+        float width_, height_, rotation_;
+        mutable std::array<Point, 4> cachedVertices_;
+        mutable bool verticesDirty_;
+    public:
+        Rect(); Rect(float centerX, float centerY, float width, float height, float rotation = 0.0f);
+        Rect(const std::vector<Point>& points);
+        Rect& center(const Point& center);  Rect& center(float x, float y);
+        Rect& width(float width);           float width() const;
+        Rect& height(float height);         float height() const;
+        Rect& rotation(float rotation);     float rotation() const;
+        Point center() const;
+        auto begin();   auto begin() const;
+        auto end();     auto end() const;
+        Rect& operator=(const std::vector<Point>& points);
+        Point& operator[](size_t index);
+        const Point& operator[](size_t index) const;
+        PA2D_SHAPE_API(Rect, override)
+        operator std::vector<Point>() const;
+    };
+    class Triangle : public Shape {
+        std::array<Point, 3> vertices_;
+    public:
+        Triangle(); Triangle(const Point& p0, const Point& p1, const Point& p2);
+        Triangle(float px0, float py0, float px1, float py1, float px2, float py2);
+        Triangle(const std::vector<Point>& points);
+        auto begin();   auto begin() const;
+        auto end();     auto end() const;
+        Triangle& operator=(const std::vector<Point>& points);
+        Point& operator[](size_t index);
+        const Point& operator[](size_t index) const;
+        PA2D_SHAPE_API(Triangle, override)
+        operator std::vector<Point>() const;
+    };
+    class Elliptic : public Shape {
+        Point center_;
+        float width_, height_, rotation_;
+    public:
+        Elliptic(); Elliptic(float centerX, float centerY, float width, float height, float rotation = 0.0f);
+        Elliptic& x(float x);                   float x() const;
+        Elliptic& y(float y);                   float y() const;
+        Elliptic& center(const Point& center);  Elliptic& center(float x, float y);
+        Elliptic& width(float width);           float width() const;
+        Elliptic& height(float height);         float height() const;
+        Elliptic& rotation(float rotation);     float rotation() const;
+        Point& center();                        Point center() const;
+        PA2D_SHAPE_API(Elliptic, override)
+        operator Point() const;
+    };
+    class Circle : public Shape {
+        Point center_;
+        float radius_;
+    public:
+        Circle(); Circle(float centerX, float centerY, float radius);
+        Circle(const Point& center, float radius);
+        Circle& x(float x);                     float x() const;
+        Circle& y(float y);                     float y() const;
+        Circle& center(const Point& center);    Circle& center(float x, float y);
+        Circle& radius(float radius);           float radius() const;
+        Point& center();                        Point center() const;
+        PA2D_SHAPE_API(Circle, override)
+        operator Point() const;
+    };
+    class Sector : public Shape {
+        Point center_;
+        float radius_, startAngle_, endAngle_;
+    public:
+        Sector(); Sector(Point center, float radius, float startAngle = 0.0f, float endAngle = 360.0f);
+        Sector(float centerX, float centerY, float radius, float startAngle = 0.0f, float endAngle = 360.0f);
+        Sector& x(float x);                     float x() const;
+        Sector& y(float y);                     float y() const;
+        Sector& center(const Point& center);    Sector& center(float x, float y);
+        Sector& radius(float radius);           float radius() const;
+        Sector& startAngle(float startAngle);   float startAngle() const;
+        Sector& endAngle(float endAngle);       float endAngle() const;
+        Point& center();                        Point center() const;
+        PA2D_SHAPE_API(Sector, override)
+        operator Point() const;
+    };
+    class Ray : public Shape {
+        Point start_, end_;
+        float length_, angle_;
+    public:
+        Ray(); Ray(float x1, float y1, float x2, float y2);
+        Ray(const Point& start, const Point& end);
+        Ray(const Point& start, float length = 0.0f, float angle = 0.0f);
+        Ray& start(float x, float y);   Ray& start(const Point& start);
+        Ray& end(float x, float y);     Ray& end(const Point& end);
+        Point& start();                 Point start() const;
+        Point& end();                   Point end() const;
+        Ray& angle(float angle);        float angle() const;
+        Ray& length(float length);      float length() const;
+        Ray& toEnd();
+        Ray& stretch(float factor);
+        Ray& spin(float degrees);
+        PA2D_SHAPE_API(Ray, override)
+        operator std::vector<Point>() const;
+    };
+#undef PA2D_SHAPE_API
+    // ==================== PATH BUILDER ====================
+    class Path {
+        class Builder {
+            std::vector<Point> points_;
+        public:
+            Builder(float startX, float startY);
+            Builder(const Builder&) = delete;
+            Builder& operator=(const Builder&) = delete;
+            Builder(Builder&&) = default;
+            Builder& operator=(Builder&&) = default;
+            Builder move(float dx, float dy)&&;
+            Builder moveTo(float x, float y)&&;
+            Builder translate(float dx, float dy)&&;
+            Builder scale(float factor)&&;
+            Builder scale(float factorX, float factorY)&&;
+            Builder scaleOnSelf(float factor)&&;
+            Builder scaleOnSelf(float factorX, float factorY)&&;
+            Builder rotate(float angleDegrees)&&;
+            Builder rotate(float angleDegrees, float centerX, float centerY)&&;
+            Builder rotateOnSelf(float angleDegrees)&&;
+            template<typename T>T to()&& { return T(std::move(points_)); }
+            template<typename T>operator T()&& { return T(std::move(points_)); }
+            template<typename T>operator T()& { return T(points_); }
+            template<typename T>operator T() const& = delete;
+        };
+        Path() = delete;
+    public:
+        static Builder from(float x, float y);
+        static Builder from(const Point& start);
+    };
     // ==================== CANVAS ====================
     // High-level drawing interface (proxy for Buffer API)
     // Each Canvas contains an internal Buffer with automatic management
     // All drawing operations are anti-aliased by default
     class Canvas {
-        Buffer buffer;
+        Buffer buffer_;
     public:
         Canvas();
         Canvas(int width, int height, Color background = White);
@@ -135,17 +416,24 @@ namespace pa2d {
         Canvas& ellipse(float cx, float cy, float width, float height, float angle, const Style& style);
         Canvas& sector(float cx, float cy, float radius, float startAngleDeg, float endAngleDeg, const Style& style);
         // ==================== OBJECT-ORIENTED DRAWING ====================
-#define draw(Class)  Canvas& draw(const Class&, const Style&);
-        draw(Points)draw(Line)draw(Ray)
-        draw(Rect)draw(Triangle)draw(Polygon)
-        draw(Circle)draw(Elliptic)draw(Sector)
-#undef draw
-        Canvas& blend(const Canvas& other, int x = 0, int y = 0, int alpha = 255, int Mode = 0);
+        Canvas& draw(const Points&, const Style&);
+        Canvas& draw(const Line&, const Style&);
+        Canvas& draw(const Ray&, const Style&);
+        Canvas& draw(const Rect&, const Style&);
+        Canvas& draw(const Triangle&, const Style&);
+        Canvas& draw(const Polygon&, const Style&);
+        Canvas& draw(const Circle&, const Style&);
+        Canvas& draw(const Elliptic&, const Style&);
+        Canvas& draw(const Sector&, const Style&);
         // ==================== IMAGE BLENDING ====================
-#define blend(Mode) Canvas& Mode##Blend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
-        blend(copy)blend(alpha)blend(add)blend(multiply)
-        blend(screen)blend(overlay)blend(destAlpha)
-#undef blend
+        Canvas& blend(const Canvas& other, int x = 0, int y = 0, int alpha = 255, int Mode = 0);
+        Canvas& alphaBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
+        Canvas& copyBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
+        Canvas& addBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
+        Canvas& multiplyBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
+        Canvas& screenBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
+        Canvas& overlayBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
+        Canvas& destAlphaBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
         // ==================== IMAGE TRANSFORM DRAWING ====================
         Canvas& draw(const Canvas& src, float centerX, float centerY, int alpha);
         Canvas& drawRotated(const Canvas& src, float centerX, float centerY, float rotation = 0.0f);
@@ -316,30 +604,11 @@ namespace pa2d {
         static std::pair<int, int> getWorkAreaSize();
         static double getDpiScale();
     private:
-        struct Impl;
-        Impl* pImpl_;
-    };
-    // ==================== GEOMETRY STYLE ====================
-    // Fluent-style drawing configuration with user-defined literals
-    // Use: Style().fill(Red).stroke(Black).width(2.0f) 
-    // Or:  0xffff0000_fill + 0xff000000_stroke + 2.0_w + 5.0_r
-    struct Style {
-        Color fillColor_ = 0;       Style& fill(Color v) { fillColor_ = v; return *this; }
-        Color strokeColor_ = 0;     Style& stroke(Color v) { strokeColor_ = v; return *this; }
-        float strokeWidth_ = 1.0f;  Style& width(float v) { strokeWidth_ = v; return *this; }
-        float radius_ = 0.0f;       Style& radius(float v) { radius_ = v; return *this; }
-        bool arc_ = true;           Style& arc(bool v) { arc_ = v; return *this; }
-        bool edges_ = true;         Style& edges(bool v) { edges_ = v; return *this; }
-        Style() = default;
-        Style(Color fill, Color stroke = 0, float width = 1.0f, float radius = 0.0f, bool Arc = true, bool edges = true);
-        Style operator+(const Style& other) const;
-        Style& operator+=(const Style& other);
+        struct Impl;Impl* pImpl_;
     };
 }
-#ifndef PA2D_DISABLE_LITERALS
 // Disable literals with: #define PA2D_DISABLE_LITERALS before including pa2d.h
-extern const pa2d::Style arc;    extern const pa2d::Style no_arc;     // Sector arc control
-extern const pa2d::Style edges;  extern const pa2d::Style no_edges;   // Sector edges control
+#ifndef PA2D_DISABLE_LITERALS
 inline pa2d::Style operator"" _fill(unsigned long long hex) { return pa2d::Style().fill((uint32_t)hex); }
 inline pa2d::Style operator"" _stroke(unsigned long long hex) { return pa2d::Style().stroke((uint32_t)hex); }
 inline pa2d::Style operator"" _w(long double w) { return pa2d::Style().width((float)w); }
@@ -347,6 +616,21 @@ inline pa2d::Style operator"" _w(unsigned long long w) { return pa2d::Style().wi
 inline pa2d::Style operator"" _r(long double r) { return pa2d::Style().radius((float)r); }
 inline pa2d::Style operator"" _r(unsigned long long r) { return pa2d::Style().radius((float)r); }
 namespace pa2d {
+    extern const pa2d::Style
+        arc, no_arc,    // Sector arc control
+        edges, no_edges,  // Sector edges control
+        White_fill, White_stroke,
+        Black_fill, Black_stroke,
+        None_fill, None_stroke,
+        Red_fill, Red_stroke,
+        Green_fill, Green_stroke,
+        Blue_fill, Blue_stroke,
+        Cyan_fill, Cyan_stroke,
+        Magenta_fill, Magenta_stroke,
+        Yellow_fill, Yellow_stroke,
+        Gray_fill, Gray_stroke,
+        LightGray_fill, LightGray_stroke,
+        DarkGray_fill, DarkGray_stroke;
     // Parse color string to ARGB value
     // Supported formats: "#RRGGBB", "#AARRGGBB", "R,G,B", "A,R,G,B"
     // Note: No other formats (color names, rgb(), etc.) are supported
@@ -355,271 +639,3 @@ namespace pa2d {
 inline pa2d::Style operator"" _fill(const char* str, size_t len) { return pa2d::Style().fill(pa2d::parseColorString(str, len)); }
 inline pa2d::Style operator"" _stroke(const char* str, size_t len) { return pa2d::Style().stroke(pa2d::parseColorString(str, len)); }
 #endif
-namespace pa2d {
-    // ==================== GEOMETRY OBJECTS ====================
-    // Geometry objects with unified transformation interface
-    struct Point {
-        float x, y;
-        Point() :x(0), y(0) {}; Point(float x, float y);
-        Point operator+(const Point&) const; Point& operator+=(const Point&);
-        Point operator-(const Point&) const; Point& operator-=(const Point&);
-        Point operator-() const; bool operator==(const Point&) const; bool operator!=(const Point&) const;
-        Point& operator+=(float); Point operator+(float) const;
-        Point& operator-=(float); Point operator-(float) const;
-        Point& operator*=(float); Point operator*(float) const;
-        Point& operator/=(float); Point operator/(float) const;
-        friend Point operator*(float, const Point&);
-        Point& translate(float dx, float dy);
-        Point& scale(float factorX, float factorY); Point& scale(float factor);
-        Point& rotate(float angleDegrees, float centerX = 0, float centerY = 0);
-    };
-    struct BoundingBox {
-        float x, y;
-        float width, height;
-        BoundingBox(float x = 0, float y = 0, float width = 0, float height = 0);
-        float left() const;
-        float right() const;
-        float bottom() const;
-        float top() const;
-        Point center() const;
-        bool contains(float px, float py) const;
-    };
-    // ==================== SHAPE SYSTEM MACROS ====================
-    // Helper macros for uniform shape interface declaration
-    // Note: Geometric transformations default to origin (0,0) 
-    //       Use OnSelf variants for transformations around shape's own center
-#define SHAPE_API(ClassName, PureVirtual) \
-    virtual ClassName& translate(float dx, float dy) PureVirtual; \
-    virtual ClassName& translate(Point delta) PureVirtual; \
-    virtual ClassName& scale(float factor) PureVirtual; \
-    virtual ClassName& scale(float factorX, float factorY) PureVirtual; \
-    virtual ClassName& scaleOnSelf(float factorX, float factorY) PureVirtual; \
-    virtual ClassName& scaleOnSelf(float factor) PureVirtual; \
-    virtual ClassName& rotate(float angleDegrees, float centerX, float centerY) PureVirtual; \
-    virtual ClassName& rotate(float angleDegrees, Point center) PureVirtual; \
-    virtual ClassName& rotate(float angleDegrees) PureVirtual; \
-    virtual ClassName& rotateOnSelf(float angleDegrees) PureVirtual; \
-    virtual bool contains(Point point) const PureVirtual; \
-    virtual BoundingBox getBoundingBox() const PureVirtual; \
-    virtual Point getCenter() const PureVirtual;
-#define TO_POINTS() \
-
-    class Shape {
-    public:
-        enum class GeometryType { POINTS, LINE, POLYGON, RECT, TRIANGLE, CIRCLE, ELLIPTIC, SECTOR, RAY };
-        GeometryType getType() const { return type; }
-        SHAPE_API(Shape, = 0);
-    private:
-        GeometryType type = GeometryType::POINTS;
-    };
-    struct Points : public Shape{
-        std::vector<Point> points;
-        Points();Points(int size);
-        Points(const std::vector<Point>& points);
-        Points(std::vector<Point>&& points);
-        Points& operator=(const std::vector<Point>& points);
-        Points& operator=(std::vector<Point>&& points);
-        SHAPE_API(Points, override)
-        operator std::vector<Point>() const;
-        operator const std::vector<Point>& () const;
-    };
-    class Line : public Shape {
-        Point start_, end_;
-    public:
-        Line();Line(float x0, float y0, float x1, float y1);
-        Line(const Point& start, const Point& end);
-        Line& start(float x, float y); Line& start(const Point& start);
-        Line& end(float x, float y);   Line& end(const Point& end);
-        Point& start();                Point start() const;
-        Point& end();                  Point end() const;
-        SHAPE_API(Line, override)
-        operator std::vector<Point>() const;
-    };
-    class Polygon : public Shape {
-        Points points_;
-    public:
-        Polygon();Polygon(const std::vector<Point>& points);
-        Polygon(std::vector<Point>&& points);
-        std::vector<Point>& getPoints();    const std::vector<Point>& getPoints() const;
-        Polygon& operator=(const std::vector<Point>& vec);
-        Polygon& operator=(std::vector<Point>&& points);
-        operator std::vector<Point>() const;
-        operator const std::vector<Point>& () const;
-    };
-    class Rect : public Shape {
-        Point center_;
-        float width_, height_, rotation_;
-        mutable std::array<Point, 4> cachedVertices_;
-        mutable bool verticesDirty_;
-    public:
-        Rect();Rect(float centerX, float centerY, float width, float height, float rotation = 0.0f);
-        Rect(const std::vector<Point>& points);
-        Rect& center(const Point& center);  Rect& center(float x, float y);
-        Rect& width(float width);           float width() const;
-        Rect& height(float height);         float height() const;
-        Rect& rotation(float rotation);     float rotation() const;
-        Point center() const;
-        auto begin();   auto begin() const;
-        auto end();     auto end() const;
-        Rect& operator=(const std::vector<Point>& points);
-        Point& operator[](size_t index);
-        const Point& operator[](size_t index) const;
-        SHAPE_API(Rect, override)
-        operator std::vector<Point>() const;
-    };
-    class Triangle : public Shape {
-        std::array<Point, 3> vertices_;
-    public:
-        Triangle();Triangle(const Point& p0, const Point& p1, const Point& p2);
-        Triangle(float px0, float py0, float px1, float py1, float px2, float py2);
-        Triangle(const std::vector<Point>& points);
-        auto begin();   auto begin() const;
-        auto end();     auto end() const;
-        Triangle& operator=(const std::vector<Point>& points);
-        Point& operator[](size_t index);
-        const Point& operator[](size_t index) const;
-        SHAPE_API(Triangle, override)
-        operator std::vector<Point>() const;
-    };
-    class Elliptic : public Shape {
-        Point center_;
-        float width_,height_,rotation_;
-    public:
-        Elliptic();Elliptic(float centerX, float centerY, float width, float height, float rotation = 0.0f);
-        Elliptic& x(float x);                   float x() const;
-        Elliptic& y(float y);                   float y() const;
-        Elliptic& center(const Point& center);  Elliptic& center(float x, float y);
-        Elliptic& width(float width);           float width() const;
-        Elliptic& height(float height);         float height() const;
-        Elliptic& rotation(float rotation);     float rotation() const;
-        Point& center();                        Point center() const;
-        SHAPE_API(Elliptic, override)
-        operator Point() const;
-    };
-    class Circle : public Shape {
-        Point center_;
-        float radius_;
-    public:
-        Circle();Circle(float centerX, float centerY, float radius);
-        Circle(const Point& center, float radius);
-        Circle& x(float x);                     float x() const;
-        Circle& y(float y);                     float y() const;
-        Circle& center(const Point& center);    Circle& center(float x, float y);
-        Circle& radius(float radius);           float radius() const;
-        Point& center();                        Point center() const;
-        SHAPE_API(Circle, override)
-        operator Point() const;
-    };
-    class Sector : public Shape {
-        Point center_;
-        float radius_,startAngle_,endAngle_;
-    public:
-        Sector();Sector(Point center, float radius, float startAngle = 0.0f, float endAngle = 360.0f);
-        Sector(float centerX, float centerY, float radius, float startAngle = 0.0f, float endAngle = 360.0f);
-        Sector& x(float x);                     float x() const;
-        Sector& y(float y);                     float y() const;
-        Sector& center(const Point& center);    Sector& center(float x, float y);
-        Sector& radius(float radius);           float radius() const;
-        Sector& startAngle(float startAngle);   float startAngle() const;
-        Sector& endAngle(float endAngle);       float endAngle() const;
-        Point& center();                        Point center() const;
-        SHAPE_API(Sector, override)
-        operator Point() const;
-    };
-    class Ray : public Shape {
-        Point start_, end_;
-        float length_,angle_;
-    public:
-        Ray();Ray(float x1, float y1, float x2, float y2);
-        Ray(const Point& start, const Point& end);
-        Ray(const Point& start, float length = 0.0f, float angle = 0.0f);
-        Ray& start(float x, float y);   Ray& start(const Point& start);
-        Ray& end(float x, float y);     Ray& end(const Point& end);
-        Point& start();                 Point start() const;
-        Point& end();                   Point end() const;
-        Ray& angle(float angle);        float angle() const;
-        Ray& length(float length);      float length() const;
-        Ray& toEnd();
-        Ray& stretch(float factor);
-        Ray& spin(float degrees);
-        SHAPE_API(Ray, override)
-        operator std::vector<Point>() const;
-    };
-#undef SHAPE_API
-#undef TO_POINTS
-    // ==================== PATH BUILDER ====================
-    class Path {
-        class Builder {
-            std::vector<Point> points_;
-        public:
-            Builder(float startX, float startY);
-            Builder(const Builder&) = delete;
-            Builder& operator=(const Builder&) = delete;
-            Builder(Builder&&) = default;
-            Builder& operator=(Builder&&) = default;
-            Builder move(float dx, float dy)&&;
-            Builder moveTo(float x, float y)&&;
-            Builder translate(float dx, float dy)&&;
-            Builder scale(float factor)&&;
-            Builder scale(float factorX, float factorY)&&;
-            Builder scaleOnSelf(float factor)&&;
-            Builder scaleOnSelf(float factorX, float factorY)&&;
-            Builder rotate(float angleDegrees)&&;
-            Builder rotate(float angleDegrees, float centerX, float centerY)&&;
-            Builder rotateOnSelf(float angleDegrees)&&;
-            template<typename T>
-            T to()&& {return T(std::move(points_));}
-            template<typename T>
-            operator T()&& { return T(std::move(points_)); }
-            template<typename T>
-            operator T()& { return T(points_); }
-            template<typename T>
-            operator T() const& = delete;
-        };
-        Path() = delete;
-    public:
-        static Builder from(float x, float y);
-        static Builder from(const Point& start);
-    };
-    // ==================== BUFFER API ====================
-    // Direct buffer manipulation
-    // Canvas acts as a proxy layer over these functions - each Canvas contains an internal Buffer
-    void line(Buffer&, float, float, float, float, const Color&, float);
-    void polyline(Buffer&, const std::vector<Point>&, const Color&, float, bool);
-    void polygon(Buffer&, const std::vector<Point>&, const Color&, const Color&, float);
-    void triangle(Buffer&, float, float, float, float, float, float, const Color&, const Color&, float);
-    void rect(Buffer&, float, float, float, float, const Color&, const Color&, float);
-    void rect(Buffer&, float, float, float, float, float, const Color&, const Color&, float);
-    void roundRect(Buffer&, float, float, float, float, const Color&, const Color&, float, float);
-    void roundRect(Buffer&, float, float, float, float, float, const Color&, const Color&, float, float);
-    void circle(Buffer&, float, float, float, const Color&, const Color&, float);
-    void ellipse(Buffer&, float, float, float, float, const Color&, const Color&, float);
-    void ellipse(Buffer&, float, float, float, float, float, const Color&, const Color&, float);
-    void sector(Buffer&, float, float, float, float, float, const Color&, const Color&, float, bool, bool);
-    bool loadImage(Buffer&, const char*);
-    bool loadImage(Buffer&, int);
-    bool loadImage(Buffer&, void*, int);
-    void drawScaled(Buffer&, const Buffer&, float, float, float, float);
-    void drawScaled(Buffer&, const Buffer&, float, float, float);
-    void drawRotated(Buffer&, const Buffer&, float, float, float);
-    void drawTransformed(Buffer&, const Buffer&, float, float, float, float);
-    void drawTransformed(Buffer&, const Buffer&, float, float, float, float, float);
-    Buffer crop(const Buffer&, int, int, int, int);
-    Buffer scaled(const Buffer&, float, float);
-    Buffer scaled(const Buffer&, float);
-    Buffer rotated(const Buffer&, float);
-    Buffer transformed(const Buffer&, float, float);
-    Buffer transformed(const Buffer&, float, float, float);
-#define blend(Mode) void Mode##Blend(const Buffer&, Buffer&, int, int, int);
-    blend(copy)blend(alpha)blend(add)blend(multiply)
-    blend(screen)blend(overlay)blend(destAlpha)
-#undef blend
-    bool text(Buffer&, const std::string&, float, float, const Color&, int, const std::string&, const FontStyle&);
-    void textInRect(Buffer&, const std::string&, float, float, float, float, const Color&, int, const std::string&, const FontStyle&);
-    void textFitRect(Buffer&, const std::string&, float, float, float, float, const Color&, int, const std::string&, const FontStyle&);
-    void textCentered(Buffer&, const std::string&, float, float, const Color&, int, const std::string&, const FontStyle&);
-    bool text(Buffer&, const std::wstring&, float, float, const Color&, int, const std::wstring&, const FontStyle&);
-    void textInRect(Buffer&, const std::wstring&, float, float, float, float, const Color&, int, const std::wstring&, const FontStyle&);
-    void textFitRect(Buffer&, const std::wstring&, float, float, float, float, const Color&, int, const std::wstring&, const FontStyle&);
-    void textCentered(Buffer&, const std::wstring&, float, float, const Color&, int, const std::wstring&, const FontStyle&);
-}
