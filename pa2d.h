@@ -78,9 +78,9 @@ namespace pa2d {
     // Encoding system:
     // Default: ANSI, change with: textEncoding(encodingType)
     // Rules:
-    // - ANSI mode Â¡Ãº "text" (GBK file encoding)
-    // - UTF-8 mode Â¡Ãº u8"text" (UTF-8 file encoding)
-    // - UTF-16 Â¡Ãº L"text" (recommended)
+    // - ANSI mode ¡ú "text" (GBK file encoding)
+    // - UTF-8 mode ¡ú u8"text" (UTF-8 file encoding)
+    // - UTF-16 ¡ú L"text" (recommended)
     // Important: Encoding mode must match string encoding!
     enum class TextEncoding { ANSI, UTF8, UTF16, CURRENT };
     TextEncoding textEncoding(TextEncoding newEncoding = TextEncoding::CURRENT);
@@ -150,11 +150,14 @@ namespace pa2d {
         Canvas& drawScaled(const Canvas& src, float centerX, float centerY, float scaleX, float scaleY);
         Canvas& drawScaled(const Canvas& src, float centerX, float centerY, float scale = 1.0f);
         Canvas& drawTransformed(const Canvas& src, float centerX, float centerY, float scale = 1.0f, float rotation = 0.0f);
+        Canvas& drawTransformed(const Canvas& src, float centerX, float centerY, float scaleX, float scaleY, float rotation);
         // ==================== IMAGE TRANSFORM COPIES ====================
         Canvas cropped(int x, int y, int width, int height) const;
         Canvas scaled(float scaleX, float scaleY) const;
+        Canvas scaled(float scale) const;
         Canvas rotated(float rotation) const;
         Canvas transformed(float scale = 1.0f, float rotation = 0.0f) const;
+        Canvas transformed(float scaleX, float scaleY, float rotation) const;
         // ==================== TEXT RENDERING ====================
         Canvas& text(const std::wstring& text, int x, int y, const Color& color = Black, int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
         Canvas& text(const std::string& text, int x, int y, const Color& color = Black, int fontSize = 16, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
@@ -597,11 +600,11 @@ namespace pa2d {
     bool loadImage(Buffer&, const char*);
     bool loadImage(Buffer&, int);
     bool loadImage(Buffer&, void*, int);
-    void drawScaledBuffer(Buffer&, const Buffer&, float, float, float, float);
-    void drawScaledBuffer(Buffer&, const Buffer&, float, float, float);
-    void drawRotatedBuffer(Buffer&, const Buffer&, float, float, float);
-    void drawTransformedBuffer(Buffer&, const Buffer&, float, float, float, float);
-    void drawTransformedBuffer(Buffer&, const Buffer&, float, float, float, float, float);
+    void drawScaled(Buffer&, const Buffer&, float, float, float, float);
+    void drawScaled(Buffer&, const Buffer&, float, float, float);
+    void drawRotated(Buffer&, const Buffer&, float, float, float);
+    void drawTransformed(Buffer&, const Buffer&, float, float, float, float);
+    void drawTransformed(Buffer&, const Buffer&, float, float, float, float, float);
     Buffer crop(const Buffer&, int, int, int, int);
     Buffer scaled(const Buffer&, float, float);
     Buffer scaled(const Buffer&, float);
@@ -620,5 +623,4 @@ namespace pa2d {
     void textInRect(Buffer&, const std::wstring&, float, float, float, float, const Color&, int, const std::wstring&, const FontStyle&);
     void textFitRect(Buffer&, const std::wstring&, float, float, float, float, const Color&, int, const std::wstring&, const FontStyle&);
     void textCentered(Buffer&, const std::wstring&, float, float, const Color&, int, const std::wstring&, const FontStyle&);
-
 }
