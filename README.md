@@ -1,6 +1,7 @@
-# PA2D Graphics Library
 <a id="english"></a>
+# PA2D Graphics Library
 [English](#english) | [中文](#chinese)
+
 ## ⚡ 1. Quick Overview
 PA2D is a CPU pipeline-based, high-performance, lightweight, and process-transparent graphics library. As its name suggests:
 1. **PrismArch** - Focus on interface and overall architecture design philosophy
@@ -56,9 +57,8 @@ Its direction may differ from other graphics libraries for several reasons:
 
 4. For niche enthusiasts - those interested in designing elegant API syntax, practicing SIMD parallel optimization, or manually controlling pixels - PA2D might offer a suitable platform.
 
-
-# PA2D 图形库
 <a id="chinese"></a>
+# PA2D 图形库
 [English](#english) | [中文](#chinese)
 ## ⚡ 1. 快速了解
 PA2D 是一个基于CPU管道的、高性能且轻量、过程透明的图形库，如同它的名字一样：
