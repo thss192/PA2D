@@ -8,7 +8,7 @@
 // Documentation: https://PrismArch.cn
 // Contact: 1926224891@qq.com
 //
-// Version: 1.0.0 (Released: 2025-12-13)
+// Version: 1.0.0-beta.1 (Released: 2025-12-13)
 //
 // License: Personal/educational use only.
 //          See documentation for full terms.
@@ -34,6 +34,7 @@
 #pragma comment(lib, "gdi32.lib")        // Screen rendering, device contexts, bitmap operations
 #pragma comment(lib, "shell32.lib")      // File drag-drop, clipboard chain, Shell integration
 #endif
+#pragma comment(linker, "/ARCH:AVX2")
 #ifdef _DEBUG
 #pragma comment(lib, "pa2dd.lib")
 #else
@@ -615,22 +616,21 @@ inline pa2d::Style operator"" _w(long double w) { return pa2d::Style().width((fl
 inline pa2d::Style operator"" _w(unsigned long long w) { return pa2d::Style().width((float)w); }
 inline pa2d::Style operator"" _r(long double r) { return pa2d::Style().radius((float)r); }
 inline pa2d::Style operator"" _r(unsigned long long r) { return pa2d::Style().radius((float)r); }
-namespace pa2d {
-    extern const pa2d::Style
-        arc, no_arc,    // Sector arc control
-        edges, no_edges,  // Sector edges control
-        White_fill, White_stroke,
-        Black_fill, Black_stroke,
-        None_fill, None_stroke,
-        Red_fill, Red_stroke,
-        Green_fill, Green_stroke,
-        Blue_fill, Blue_stroke,
-        Cyan_fill, Cyan_stroke,
-        Magenta_fill, Magenta_stroke,
-        Yellow_fill, Yellow_stroke,
-        Gray_fill, Gray_stroke,
-        LightGray_fill, LightGray_stroke,
-        DarkGray_fill, DarkGray_stroke;
+namespace pa2d {extern const pa2d::Style
+    arc,    no_arc,    // Sector arc control
+    edges,  no_edges,  // Sector edges control
+    White_fill,     White_stroke,
+    Black_fill,     Black_stroke,
+    None_fill,      None_stroke,
+    Red_fill,       Red_stroke,
+    Green_fill,     Green_stroke,
+    Blue_fill,      Blue_stroke,
+    Cyan_fill,      Cyan_stroke,
+    Magenta_fill,   Magenta_stroke,
+    Yellow_fill,    Yellow_stroke,
+    Gray_fill,      Gray_stroke,
+    LightGray_fill, LightGray_stroke,
+    DarkGray_fill,  DarkGray_stroke;
     // Parse color string to ARGB value
     // Supported formats: "#RRGGBB", "#AARRGGBB", "R,G,B", "A,R,G,B"
     // Note: No other formats (color names, rgb(), etc.) are supported
