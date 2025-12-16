@@ -8,7 +8,7 @@
 // Documentation: https://PrismArch.cn
 // Contact: 1926224891@qq.com
 //
-// Version: 1.0.0-beta.1 (Released: 2025-12-13)
+// Version: 1.0.0-beta.1 (Released: 2025-12-16)
 //
 // License: Personal/educational use only.
 //          See documentation for full terms.
@@ -21,26 +21,10 @@
 //   - Anti-aliased rendering by default
 // 
 // Requirements:
-//   - C++14 or later
-//   - Windows 7 or newer
-//   - AVX2-capable CPU
-//   - Compile with /arch:AVX2
+//   - Windows 7 or later
+//   - Modern C++ compiler (Visual Studio 2015+ recommended)
+//   - For best performance: CPU with AVX2 support
 // ============================================
-#ifdef _WIN32
-#pragma comment(lib, "ole32.lib")        // COM object creation (WIC factory initialization)
-#pragma comment(lib, "WindowsCodecs.lib")// Windows Imaging Component (PNG/JPEG decoding)
-#pragma comment(lib, "gdiplus.lib")      // High-quality font rendering (anti-aliasing, font caching)
-#pragma comment(lib, "user32.lib")       // Window management, message processing, input events
-#pragma comment(lib, "gdi32.lib")        // Screen rendering, device contexts, bitmap operations
-#pragma comment(lib, "shell32.lib")      // File drag-drop, clipboard chain, Shell integration
-#endif
-#pragma comment(linker, "/ARCH:AVX2")
-#ifdef _DEBUG
-#pragma comment(lib, "pa2dd.lib")
-#else
-#pragma comment(lib, "pa2d.lib")
-#endif
-#include <utility> 
 #include <vector>
 #include <array> 
 #include <cstdint>
@@ -51,15 +35,18 @@ namespace pa2d {
     const char* getVersion();
     // ==================== Color(ARGB) ====================
     struct Color {
-        union { uint32_t data, argb; struct { uint8_t b, g, r, a; }; struct { uint32_t rgb : 24, _ : 8; }; };
-        Color() :data(0) {} Color(uint32_t argb) :data(argb) {} Color(uint8_t a, uint8_t r, uint8_t g, uint8_t b) :a(a), r(r), g(g), b(b) {}
+        union { 
+            uint32_t data, argb;
+            struct { uint8_t b, g, r, a; };
+            struct { uint32_t rgb : 24, _ : 8; };
+        };
+        Color() :data() {}
+        Color(uint32_t argb) :data(argb) {}
+        Color(uint8_t a, uint8_t r, uint8_t g, uint8_t b) :a(a), r(r), g(g), b(b) {}
         Color(uint8_t alpha, const Color& base) : data((static_cast<uint32_t>(alpha) << 24) | (base.data & 0x00FFFFFF)) {}
         operator uint32_t() const { return data; }
-    };extern const Color
-        White, Black,     None,
-        Red,   Green,     Blue,
-        Cyan,  Magenta,   Yellow,
-        Gray,  LightGray, DarkGray;
+    };
+    extern const Color White, Black, None, Red, Green, Blue, Cyan, Magenta, Yellow, Gray, LightGray, DarkGray;
     // ==================== BUFFER ====================
     // Pixel buffer container with SIMD-optimized operations
     // Note: For best performance, access color pointer directly instead of using at()
@@ -71,63 +58,22 @@ namespace pa2d {
         Buffer(const Buffer& other);
         Buffer(Buffer&& other) noexcept;
         ~Buffer();
-        size_t size() const { return static_cast<size_t>(width) * height; }
+        size_t size() const { return (size_t)width * height; }
         Color& at(int x, int y);
         const Color& at(int x, int y) const;
-        static void copy(Buffer& dest, const Buffer& src);
-        void resize(int newWidth, int newHeight, const Color& color = None);
+        void changeSize(int width, int height, const Color& color = None);
         void clear(const Color& color = None);
         Buffer& operator=(const Buffer& other);
         Buffer& operator=(Buffer&& other) noexcept;
         explicit operator bool() const { return color && width > 0 && height > 0; }
     };
-    // ==================== BUFFER API ====================
-    // Direct buffer manipulation
-    // Canvas acts as a proxy layer over these functions - each Canvas contains an internal Buffer
-    struct Point;
-    void line(Buffer&, float, float, float, float, const Color&, float);
-    void polyline(Buffer&, const std::vector<Point>&, const Color&, float, bool);
-    void polygon(Buffer&, const std::vector<Point>&, const Color&, const Color&, float);
-    void triangle(Buffer&, float, float, float, float, float, float, const Color&, const Color&, float);
-    void rect(Buffer&, float, float, float, float, const Color&, const Color&, float);
-    void rect(Buffer&, float, float, float, float, float, const Color&, const Color&, float);
-    void roundRect(Buffer&, float, float, float, float, const Color&, const Color&, float, float);
-    void roundRect(Buffer&, float, float, float, float, float, const Color&, const Color&, float, float);
-    void circle(Buffer&, float, float, float, const Color&, const Color&, float);
-    void ellipse(Buffer&, float, float, float, float, const Color&, const Color&, float);
-    void ellipse(Buffer&, float, float, float, float, float, const Color&, const Color&, float);
-    void sector(Buffer&, float, float, float, float, float, const Color&, const Color&, float, bool, bool);
-    bool loadImage(Buffer&, const char*);
-    bool loadImage(Buffer&, int);
-    bool loadImage(Buffer&, void*, int);
-    void drawScaled(Buffer&, const Buffer&, float, float, float, float);
-    void drawScaled(Buffer&, const Buffer&, float, float, float);
-    void drawRotated(Buffer&, const Buffer&, float, float, float);
-    void drawTransformed(Buffer&, const Buffer&, float, float, float, float);
-    void drawTransformed(Buffer&, const Buffer&, float, float, float, float, float);
-    Buffer crop(const Buffer&, int, int, int, int);
-    Buffer scaled(const Buffer&, float, float);
-    Buffer scaled(const Buffer&, float);
-    Buffer rotated(const Buffer&, float);
-    Buffer transformed(const Buffer&, float, float);
-    Buffer transformed(const Buffer&, float, float, float);
-    void alphaBlend(const Buffer&, Buffer&, int, int, int);
-    void copyBlend(const Buffer&, Buffer&, int, int, int);
-    void addBlend(const Buffer&, Buffer&, int, int, int);
-    void multiplyBlend(const Buffer&, Buffer&, int, int, int);
-    void screenBlend(const Buffer&, Buffer&, int, int, int);
-    void overlayBlend(const Buffer&, Buffer&, int, int, int);
-    void destAlphaBlend(const Buffer&, Buffer&, int, int, int);
     // ==================== TEXT STYLES ====================
     // Windows GDI text rendering (anti-aliasing optional)
     void setTextAntiAliasing(bool enable);
     // String encoding configuration
-    // Principle: Controls std::string to std::wstring conversion method
-    // ANSI: Convert using system local encoding (e.g., GBK). Default ANSI is suitable for Chinese users
-    // UTF8: Convert using UTF-8 encoding (source code needs to be saved with u8"text")
-    // CURRENT: Get current setting only
-    enum class TextEncoding { ANSI, UTF8, CURRENT };
-    TextEncoding textEncoding(TextEncoding newEncoding = TextEncoding::CURRENT);
+    enum class TextEncoding { ANSI, UTF8};
+    TextEncoding getTextEncoding();
+    void setTextEncoding(TextEncoding encoding);
     class FontStyle {
         int styleBits_; float italicAngle_, rotationAngle_;
     public:
@@ -138,14 +84,6 @@ namespace pa2d {
         bool operator&(const FontStyle&) const;
         bool operator==(const FontStyle&) const;
     };
-    bool text(Buffer&, const std::wstring&, float, float, const Color&, int, const std::wstring&, const FontStyle&);
-    bool text(Buffer&, const std::string&, float, float, const Color&, int, const std::string&, const FontStyle&);
-    bool textInRect(Buffer&, const std::wstring&, float, float, float, float, const Color&, int, const std::wstring&, const FontStyle&);
-    bool textInRect(Buffer&, const std::string&, float, float, float, float, const Color&, int, const std::string&, const FontStyle&);
-    bool textFitRect(Buffer&, const std::wstring&, float, float, float, float, const Color&, int, const std::wstring&, const FontStyle&);
-    bool textFitRect(Buffer&, const std::string&, float, float, float, float, const Color&, int, const std::string&, const FontStyle&);
-    bool textCentered(Buffer&, const std::wstring&, float, float, const Color&, int, const std::wstring&, const FontStyle&);
-    bool textCentered(Buffer&, const std::string&, float, float, const Color&, int, const std::string&, const FontStyle&);
     // ==================== GEOMETRY STYLE ====================
     // Fluent-style drawing configuration with user-defined literals
     // Use: Style().fill(Red).stroke(Black).width(2.0f) 
@@ -194,6 +132,10 @@ namespace pa2d {
     // Helper macros for uniform shape interface declaration
     // Note: Geometric transformations default to origin (0,0) 
     //       Use OnSelf variants for transformations around shape's own center
+    class Shape {
+    public:
+        enum class GeometryType { POINTS, LINE, POLYGON, RECT, TRIANGLE, CIRCLE, ELLIPTIC, SECTOR, RAY };
+        GeometryType getType() const { return type; }
 #define PA2D_SHAPE_API(ClassName, PureVirtual) \
     virtual ClassName& translate(float dx, float dy) PureVirtual; \
     virtual ClassName& translate(Point delta) PureVirtual; \
@@ -208,10 +150,6 @@ namespace pa2d {
     virtual bool contains(Point point) const PureVirtual; \
     virtual BoundingBox getBoundingBox() const PureVirtual; \
     virtual Point getCenter() const PureVirtual;
-    class Shape {
-    public:
-        enum class GeometryType { POINTS, LINE, POLYGON, RECT, TRIANGLE, CIRCLE, ELLIPTIC, SECTOR, RAY };
-        GeometryType getType() const { return type; }
         PA2D_SHAPE_API(Shape, = 0);
     private:
         GeometryType type = GeometryType::POINTS;
@@ -392,24 +330,27 @@ namespace pa2d {
         Canvas(int width, int height, Color background = White);
         Canvas(const Buffer& buffer); Canvas(Buffer&& buffer);
         Canvas(const Canvas& other); Canvas(Canvas&& other) noexcept;
-        Canvas(const char* filePath); Canvas(int resourceID);
+        Canvas(const char* filePath);
+        Canvas(int resourceID);
         int width() const; int height() const;
         Color& at(int x, int y); const Color& at(int x, int y) const;
         const Buffer& getBuffer() const; Buffer& getBuffer();
         Canvas& operator=(const Canvas& other);
         Canvas& operator=(const Buffer& buffer);
         // ==================== IMAGE OPERATIONS ====================
-        bool loadImage(const char* filePath); bool loadImage(int resourceID);
+        bool loadImage(const char* filePath, int width = -1, int height = -1);
+        bool loadImage(int resourceID, int width = -1, int height = -1);
         Canvas& clear(Color color = White);
         Canvas& crop(int x, int y, int width, int height);
-        Canvas& resize(int newWidth, int newHeight, uint32_t color = White);
+        Canvas& resize(int width, int height);
+        Canvas& changeSize(int newWidth, int newHeight, uint32_t color = White);
         // ==================== BASIC SHAPES ====================
         Canvas& line(float x0, float y0, float x1, float y1, const Style& style);
         Canvas& polyline(const std::vector<Point>& points, const Style& style, bool closed = false);
         Canvas& polygon(const std::vector<Point>& vertices, const Style& style);
-        Canvas& triangle(float ax, float ay, float bx, float by, float cx, float cy, const Style& style);
+        Canvas& triangle(float x0, float y0, float x1, float y1, float x2, float y2, const Style& style);
         Canvas& rect(float x, float y, float width, float height, const Style& style);
-        Canvas& rect(float centerX, float centerY, float width, float height, float angle, const Style& style);
+        Canvas& rect(float cx, float cy, float width, float height, float angle, const Style& style);
         Canvas& roundRect(float x, float y, float width, float height, const Style& style);
         Canvas& roundRect(float centerX, float centerY, float width, float height, float angle, const Style& style);
         Canvas& circle(float centerX, float centerY, float radius, const Style& style);
@@ -427,24 +368,26 @@ namespace pa2d {
         Canvas& draw(const Elliptic&, const Style&);
         Canvas& draw(const Sector&, const Style&);
         // ==================== IMAGE BLENDING ====================
+        Canvas& copy(const Canvas& src, int dstX = 0, int dstY = 0);
         Canvas& blend(const Canvas& other, int x = 0, int y = 0, int alpha = 255, int Mode = 0);
         Canvas& alphaBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
-        Canvas& copyBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
         Canvas& addBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
         Canvas& multiplyBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
         Canvas& screenBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
         Canvas& overlayBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
         Canvas& destAlphaBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
         // ==================== IMAGE TRANSFORM DRAWING ====================
-        Canvas& draw(const Canvas& src, float centerX, float centerY, int alpha);
+        Canvas& draw(const Canvas& src, float centerX, float centerY, int alpha = 255);
         Canvas& drawRotated(const Canvas& src, float centerX, float centerY, float rotation = 0.0f);
         Canvas& drawScaled(const Canvas& src, float centerX, float centerY, float scaleX, float scaleY);
+        Canvas& drawScaledTo(const Canvas& src, float centerX, float centerY, int width, int height);
         Canvas& drawScaled(const Canvas& src, float centerX, float centerY, float scale = 1.0f);
         Canvas& drawTransformed(const Canvas& src, float centerX, float centerY, float scale = 1.0f, float rotation = 0.0f);
         Canvas& drawTransformed(const Canvas& src, float centerX, float centerY, float scaleX, float scaleY, float rotation);
         // ==================== IMAGE TRANSFORM COPIES ====================
         Canvas cropped(int x, int y, int width, int height) const;
         Canvas scaled(float scaleX, float scaleY) const;
+        Canvas scaledTo(int width, int height) const;
         Canvas scaled(float scale) const;
         Canvas rotated(float rotation) const;
         Canvas transformed(float scale = 1.0f, float rotation = 0.0f) const;
@@ -545,7 +488,7 @@ namespace pa2d {
         Window& onClipboardFiles(FileListCallback cb);
         Window& disableClipboardFiles();
         // ==================== INPUT STATE ====================
-        std::pair<int, int> getMousePosition() const;
+        Point getMousePosition() const;
         bool isMouseInWindow() const;
         bool isMouseButtonPressed(int button) const;
         bool isKeyPressed(int vkCode) const;
@@ -560,6 +503,7 @@ namespace pa2d {
         Window& setResizable(bool resizable);
         Window& setAlwaysOnTop(bool onTop);
         Window& setBorderless(bool borderless);
+        Window& setTitlebarless(bool titlebarless);
         Window& setFullscreen(bool fullscreen);
         Window& setMinSize(int minWidth, int minHeight);
         Window& setMaxSize(int maxWidth, int maxHeight);
@@ -582,7 +526,6 @@ namespace pa2d {
         Window& setIconFromResource(int resourceId);
         // ==================== INPUT ====================
         Window& setMouseCapture(bool capture);
-        static std::pair<int, int> getGlobalMousePosition();
         // ==================== CLIPBOARD ====================
         bool setClipboardText(const std::string& text);
         std::string getClipboardText();
@@ -600,15 +543,62 @@ namespace pa2d {
         Window& appendMenuSeparator(HMENU menu);
         Window& appendMenuPopup(HMENU menu, const char* text, HMENU popupMenu);
         Window& destroyMenu(HMENU menu);
-        // ==================== SYSTEM  ====================
-        static std::pair<int, int> getScreenSize();
-        static std::pair<int, int> getWorkAreaSize();
-        static double getDpiScale();
     private:
         struct Impl;Impl* pImpl_;
     };
+    // ==================== SYSTEM  ====================
+    Point getGlobalMousePosition();
+    Point getScreenSize();
+    Point getWorkAreaSize();
+    double getDpiScale();
+    // ==================== BUFFER API ====================
+    // Direct buffer manipulation
+    // Canvas acts as a proxy layer over these functions - each Canvas contains an internal Buffer
+    void line(Buffer&, float, float, float, float, const Color&, float);
+    void polyline(Buffer&, const std::vector<Point>&, const Color&, float, bool);
+    void polygon(Buffer&, const std::vector<Point>&, const Color&, const Color&, float);
+    void triangle(Buffer&, float, float, float, float, float, float, const Color&, const Color&, float);
+    void rect(Buffer&, float, float, float, float, const Color&, const Color&, float);
+    void rect(Buffer&, float, float, float, float, float, const Color&, const Color&, float);
+    void roundRect(Buffer&, float, float, float, float, const Color&, const Color&, float, float);
+    void roundRect(Buffer&, float, float, float, float, float, const Color&, const Color&, float, float);
+    void circle(Buffer&, float, float, float, const Color&, const Color&, float);
+    void ellipse(Buffer&, float, float, float, float, const Color&, const Color&, float);
+    void ellipse(Buffer&, float, float, float, float, float, const Color&, const Color&, float);
+    void sector(Buffer&, float, float, float, float, float, const Color&, const Color&, float, bool, bool);
+    bool loadImage(Buffer&, const char*);
+    bool loadImage(Buffer&, int);
+    bool loadImage(Buffer&, void*, int);
+    void drawScaled(Buffer&, const Buffer&, float, float, float, float);
+    void drawScaledTo(Buffer&, const Buffer&, float, float, int, int);
+    void drawScaled(Buffer&, const Buffer&, float, float, float);
+    void drawRotated(Buffer&, const Buffer&, float, float, float);
+    void drawTransformed(Buffer&, const Buffer&, float, float, float, float);
+    void drawTransformed(Buffer&, const Buffer&, float, float, float, float, float);
+    void copy(Buffer& dest, const Buffer& src);
+    Buffer crop(const Buffer&, int, int, int, int);
+    Buffer scaled(const Buffer&, float, float);
+    Buffer scaledTo(const Buffer&, int, int);
+    Buffer scaled(const Buffer&, float);
+    Buffer rotated(const Buffer&, float);
+    Buffer transformed(const Buffer&, float, float);
+    Buffer transformed(const Buffer&, float, float, float);
+    void alphaBlend(const Buffer&, Buffer&, int, int, int);
+    void copyBlend(const Buffer&, Buffer&, int, int);
+    void addBlend(const Buffer&, Buffer&, int, int, int);
+    void multiplyBlend(const Buffer&, Buffer&, int, int, int);
+    void screenBlend(const Buffer&, Buffer&, int, int, int);
+    void overlayBlend(const Buffer&, Buffer&, int, int, int);
+    void destAlphaBlend(const Buffer&, Buffer&, int, int, int);
+    bool text(Buffer&, const std::wstring&, float, float, const Color&, int, const std::wstring&, const FontStyle&);
+    bool text(Buffer&, const std::string&, float, float, const Color&, int, const std::string&, const FontStyle&);
+    bool textInRect(Buffer&, const std::wstring&, float, float, float, float, const Color&, int, const std::wstring&, const FontStyle&);
+    bool textInRect(Buffer&, const std::string&, float, float, float, float, const Color&, int, const std::string&, const FontStyle&);
+    bool textFitRect(Buffer&, const std::wstring&, float, float, float, float, const Color&, int, const std::wstring&, const FontStyle&);
+    bool textFitRect(Buffer&, const std::string&, float, float, float, float, const Color&, int, const std::string&, const FontStyle&);
+    bool textCentered(Buffer&, const std::wstring&, float, float, const Color&, int, const std::wstring&, const FontStyle&);
+    bool textCentered(Buffer&, const std::string&, float, float, const Color&, int, const std::string&, const FontStyle&);
 }
-// Disable literals with: #define PA2D_DISABLE_LITERALS before including pa2d.h
 #ifndef PA2D_DISABLE_LITERALS
 inline pa2d::Style operator"" _fill(unsigned long long hex) { return pa2d::Style().fill((uint32_t)hex); }
 inline pa2d::Style operator"" _stroke(unsigned long long hex) { return pa2d::Style().stroke((uint32_t)hex); }
@@ -638,4 +628,20 @@ namespace pa2d {extern const pa2d::Style
 }
 inline pa2d::Style operator"" _fill(const char* str, size_t len) { return pa2d::Style().fill(pa2d::parseColorString(str, len)); }
 inline pa2d::Style operator"" _stroke(const char* str, size_t len) { return pa2d::Style().stroke(pa2d::parseColorString(str, len)); }
+#endif
+
+#ifdef _WIN32
+#pragma comment(lib, "ole32.lib")        // COM object creation (WIC factory initialization)
+#pragma comment(lib, "WindowsCodecs.lib")// Windows Imaging Component (PNG/JPEG decoding)
+#pragma comment(lib, "gdiplus.lib")      // High-quality font rendering (anti-aliasing, font caching)
+#pragma comment(lib, "user32.lib")       // Window management, message processing, input events
+#pragma comment(lib, "gdi32.lib")        // Screen rendering, device contexts, bitmap operations
+#pragma comment(lib, "shell32.lib")      // File drag-drop, clipboard chain, Shell integration
+#endif
+#pragma comment(linker, "/ARCH:AVX2")
+
+#ifdef _DEBUG
+#pragma comment(lib, "pa2dd.lib")
+#else
+#pragma comment(lib, "pa2d.lib")
 #endif
