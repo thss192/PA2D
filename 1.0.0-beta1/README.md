@@ -121,12 +121,13 @@ PA2D 采用了一些现代C++的语法特性，让代码更简洁直观。
     // canvas.rect(100, 100, 120, 80, style + 4_w);
 
 	// 链式调用（更流畅！）
-	canvas.circle(100, 100, 60, style + 2_w) // 组合不同宽度
-		.rect(100, 100, 120, 80, style + 4_w);
+    canvas.circle(100, 100, 60, style + 2_w) // 组合不同宽度
+        .rect(100, 100, 120, 80, 25.0_r + style + 3_w + 25.0_r);
 ```
   
 原理：每个方法都返回对象自身的引用，可以连续调用。  
-<img width="640" height="480" alt="QQ_1766146318998" src="https://github.com/user-attachments/assets/a35bd2f2-5255-4912-9609-c69100ca82cd" />
+  
+<img width="640" height="480" alt="QQ_1766155489225" src="https://github.com/user-attachments/assets/a4452553-c509-40a7-8f6a-c80814ee6e75" />
 
 💡 为什么这样设计？  
 · 代码更简洁：减少重复  
