@@ -4,7 +4,7 @@
 //
 // Repository:    https://github.com/thss192/PA2D
 // Documentation: https://PrismArch.cn
-// Version:       1.0.0-beta1 (2025-12-19)
+// Version:       1.0.0-beta1 (2025-12-20)
 // Free: Personal/Educational | Commercial: Licensed
 //
 // Features:
@@ -117,6 +117,8 @@ namespace pa2d {
         Point& scale(float scaleX, float scaleY); Point& scale(float scale);
         Point& rotate(float angle, float centerX = 0, float centerY = 0);
     };
+    struct PointInt { int x, y; };
+    struct Size { int width, height; };
     class Rect;
     // ==================== SHAPE SYSTEM MACROS ====================
     // Helper macros for uniform shape interface declaration
@@ -350,15 +352,7 @@ namespace pa2d {
         Canvas& ellipse(float centerX, float centerY, float width, float height, float angle, const Style& style);
         Canvas& sector(float centerX, float centerY, float radius, float startAngle, float endAngle, const Style& style);
         // ==================== OBJECT-ORIENTED DRAWING ====================
-        Canvas& draw(const Points&, const Style&);
-        Canvas& draw(const Line&, const Style&);
-        Canvas& draw(const Ray&, const Style&);
-        Canvas& draw(const Rect&, const Style&);
-        Canvas& draw(const Triangle&, const Style&);
-        Canvas& draw(const Polygon&, const Style&);
-        Canvas& draw(const Circle&, const Style&);
-        Canvas& draw(const Elliptic&, const Style&);
-        Canvas& draw(const Sector&, const Style&);
+        Canvas& draw(const Shape& shape, const Style& style);
         // ==================== IMAGE BLENDING ====================
         Canvas& copy(const Canvas& src, int dstX = 0, int dstY = 0);
         Canvas& blend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255, int mode = 0);
@@ -370,9 +364,9 @@ namespace pa2d {
         Canvas& destAlphaBlend(const Canvas& src, int dstX = 0, int dstY = 0, int alpha = 255);
         // ==================== IMAGE TRANSFORM DRAWING ====================
         Canvas& draw(const Canvas& src, float centerX, float centerY, int alpha = 255);
-        Canvas& drawRotated(const Canvas& src, float centerX, float centerY, float rotation);
         Canvas& drawResized(const Canvas& src, float centerX, float centerY, int width, int height);
         Canvas& drawScaled(const Canvas& src, float centerX, float centerY, float scaleX, float scaleY);
+        Canvas& drawRotated(const Canvas& src, float centerX, float centerY, float rotation);
         Canvas& drawScaled(const Canvas& src, float centerX, float centerY, float scale);
         Canvas& drawTransformed(const Canvas& src, float centerX, float centerY, float scale, float rotation);
         Canvas& drawTransformed(const Canvas& src, float centerX, float centerY, float scaleX, float scaleY, float rotation);
@@ -458,15 +452,15 @@ namespace pa2d {
         void waitForClose();
         // ==================== SIZE & POSITION ====================
         Window& setPosition(int x, int y);
+        PointInt getPosition() const;
         Window& setClientSize(int width, int height);
+        Size getClientSize() const;
         Window& setWindowSize(int width, int height);
-        void getPosition(int& x, int& y) const;
-        void getClientSize(int& width, int& height) const;
-        void getWindowSize(int& width, int& height) const;
+        Size getWindowSize() const;
         // ==================== RENDERING ====================
         Window& render(const Canvas& canvas, int destX = 0, int destY = 0, int srcX = 0, int srcY = 0, int width = -1, int height = -1, bool clearBackground = true, COLORREF bgColor = 0);
-        Window& renderCentered(const Canvas& canvas, bool clearBackground = true, COLORREF bgColor = 0);
         Window& render(const Buffer& buffer, int destX = 0, int destY = 0, int srcX = 0, int srcY = 0, int width = -1, int height = -1, bool clearBackground = true, COLORREF bgColor = 0);
+        Window& renderCentered(const Canvas& canvas, bool clearBackground = true, COLORREF bgColor = 0);
         Window& renderCentered(const Buffer& buffer, bool clearBackground = true, COLORREF bgColor = 0);
         // ==================== EVENT CALLBACKS ====================
         Window& onKey(KeyCallback cb);
