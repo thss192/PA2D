@@ -42,13 +42,15 @@ using namespace pa2d;
 
 int main() {
     Window window(640, 480, "Original Window");
-    Window clonedWindow = window;  // 复制构造
-    
-    // 显式两个窗口
+
+    // 显式初始窗口
     window.show()
-		.setPosition(100, 100);
-    clonedWindow.show()
-		.setPosition(800, 100)
+        .setPosition(100, 100);
+    // 拷贝构造(复制所有窗口状态)
+    Window clonedWindow = window;  
+
+    clonedWindow
+        .setPosition(800, 100)
         .setTitle("Cloned Window");
 
     // 等待原始窗口关闭
