@@ -53,7 +53,7 @@ int main() {
     clonedWindow.show().setPosition(800, 100)
                       .setTitle("Cloned Window");
     
-    // 等待任意窗口关闭
+    // 等待原始窗口关闭
     window.waitForClose();
 }
 ```
