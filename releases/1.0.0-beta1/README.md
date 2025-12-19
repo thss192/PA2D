@@ -210,8 +210,7 @@ PA2D的工作量实在太大，我目前还未做退回版本
 ## 📦 安装指南
 
 ### 1. 下载安装程序
-点击下载：[pa2d-1.0.0-beta1-setup.exe](https://github.com/thss192/PA2D/releases/1.0.0-beta1
-/README.md)  
+点击下载：[pa2d-1.0.0-beta1-setup.exe](https://github.com/thss192/PA2D/releases/1.0.0-beta1/README.md)  
 文件大小：约 4.02 MB  
 
 ### 2. 运行安装向导
