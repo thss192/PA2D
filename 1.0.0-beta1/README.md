@@ -36,21 +36,28 @@ PA2D库大部分常用方法都在对象的方法里，很方便用户平时预�
 
 你或许会探索到一些有趣的功能  
 例如：让我们"**克隆**"一个窗口  
+
 ```cpp
-#include<pa2d.h>
-// 创建一个 640*480 的窗口
+#include <pa2d.h>
 using namespace pa2d;
-Window window(640, 480, "My first PA2D Window");
+
 int main() {
-	window.show();
-	// 克隆一个窗口
-	Window(window).show()
-		.waitForClose(); // 链式调用
+    Window window(640, 480, "Original Window");
+    Window clonedWindow = window;  // 复制构造
+    
+    // 两个窗口都显示
+    window.show().setPosition(100, 100);
+    clonedWindow.show().setPosition(800, 100)
+                      .setTitle("Cloned Window");
+    
+    // 等待任意窗口关闭
+    window.waitForClose();
 }
 ```
+  
 会获得以下效果  
-<img width="640" height="480" alt="image" src="https://github.com/user-attachments/assets/8127eee5-66ec-4f37-9a84-11f54eaca888" />
-
+<img width="640" height="480" alt="QQ_1766149996782" src="https://github.com/user-attachments/assets/ea8c6c8c-4983-4bf8-8f11-2a704d7ec496" />
+  
 ###  Step 2: 尝试用PA2D来绘画
 PA2D 的框架会方便你做出许多有趣的效果  
 不过当下之急，让我们在窗口上绘制上一些东西  
