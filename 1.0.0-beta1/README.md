@@ -8,7 +8,7 @@
 对Visual Studio安装十分友好，有自动化安装程序
 [📦 快速安装](#installation)
 
-###  **Step 1** : 实验性地使用一下 Window 类
+###  **Step 1** : 使用Window类管理窗口
 引入头文件后，尝试创建一个窗口  
 ```cpp
 #include<pa2d.h>
@@ -61,7 +61,7 @@ int main() {
 会获得以下效果  
 <img width="640" height="480" alt="QQ_1766149996782" src="https://github.com/user-attachments/assets/ea8c6c8c-4983-4bf8-8f11-2a704d7ec496" />
   
-###  Step 2: 尝试用PA2D来绘画
+###  Step 2: 尝试在Canvas类上绘制图形
 PA2D 的框架会方便你做出许多有趣的效果  
 不过当下之急，让我们在窗口上绘制上一些东西  
 这才是图形库的核心功能  
