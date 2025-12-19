@@ -14,19 +14,19 @@
 #### 创建一个窗口  
 ```cpp
 #include<pa2d.h>
-// 使用pa2d 命名空间
 using namepsace pa2d;
-// 创建一个 640*480 的窗口
-Window window(640, 480，"My first PA2D Window");
-
 int main(){
-  // 事实上，初次创建窗口并不会立即显示，因为初始化并不代表着显示
-  // 我们需要调用窗口的show()方法显式窗口
+  // 创建一个 640*480 的窗口
+  Window window(640, 480，"My first PA2D Window");
+  // 显式这个窗口
   window.show();
-  // 我提供了 waitForClose() 方法方便展示窗口
-  // 防止程序立即退出
+  // 等待窗口关闭
   window.waitForClose();
 }
+
+// Note:
+// 事实上，初次创建窗口并不会立即显示，因为初始化并不代表着显示
+// 我提供了 waitForClose() 方法方便展示窗口，防止程序立即退出
 ```  
   
   运行后，我们就会获得以下的窗口      
