@@ -87,14 +87,15 @@ PA2D 采用了一些现代C++的语法特性，让代码更简洁直观。
 ```cpp
   // 传统方式
   // Style style{};
-  // style.fill_ = 0xFF00FF00;  // ARGB: 透明度,红,绿,蓝
-  // style.stroke_ = 0xFFFF0000;
-  // style.width_ = 3;
+  // style.fill_ = 0xFF00FF00;    // 不透明绿色(填充)
+  // style.stroke_ = 0xFFFF0000;  // 不透明红色(线框)
+  // style.width_ = 3;            // 3像素线宽
 
-  // PA2D的字面量语法
-  // 不透明绿色(填充) +  不透明红色(线框) + 3像素线宽
-	Style style = 0xFF00FF00_fill + 0xFFFF0000_stroke + 3_w;
-	canvas.circle(100, 100, 60, style);
+  // PA2D的字面量语法(一行解决！)
+  Style style = 0xFF00FF00_fill + 0xFFFF0000_stroke + 3_w;
+
+  canvas.circle(100, 100, 60, style);
+
   // 支持多种语法
   Style Red_fill = "255,255,0,0"_fill;
   Style Green_stroke = "#00FF00"_stroke;  //自动补充为不透明
@@ -113,7 +114,7 @@ PA2D 采用了一些现代C++的语法特性，让代码更简洁直观。
     // canvas.rect(100, 100, 120, 80, style + 4_w);
 
 	// 链式调用（更流畅！）
-	canvas.circle(100, 100, 60, style + 2_w) // 不同宽度
+	canvas.circle(100, 100, 60, style + 2_w) // 组合不同宽度
 		.rect(100, 100, 120, 80, style + 4_w);
 ```
   
