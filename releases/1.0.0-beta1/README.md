@@ -77,7 +77,7 @@ int main() {
 	canvas.circle(100, 100, 60, Green_fill + Red_stroke);
 
 	// 3. 让窗口去渲染画布
-	window.render(canvas)
+	window.render(canvas);
 
 	window.waitForClose();
 }
