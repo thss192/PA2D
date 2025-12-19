@@ -49,7 +49,7 @@ int main() {
 }
 ```
 会获得以下效果  
-<img width="640" height="480"alt="QQ_1766144410375" src="https://github.com/user-attachments/assets/0a267838-d7c9-4817-85ea-66e4ebbed999" />
+<img width="640" height="480" alt="image" src="https://github.com/user-attachments/assets/8127eee5-66ec-4f37-9a84-11f54eaca888" />
 
 ###  Step 2: 尝试用PA2D来绘画
 PA2D 的框架会方便你做出许多有趣的效果  
@@ -169,28 +169,28 @@ PA2D的工作量实在太大，我目前还未做退回版本
 ### 📦 安装指南
 
 #### 1. 下载安装程序
-点击下载：[pa2d-1.0.0-beta1-setup.exe](https://github.com/thss192/PA2D/1.0.0-beta1/pa2d-1.0.0-beta1.exe)
-文件大小：约 4.02 MB
+点击下载：[pa2d-1.0.0-beta1-setup.exe](https://github.com/thss192/PA2D/1.0.0-beta1/pa2d-1.0.0-beta1.exe)  
+文件大小：约 4.02 MB  
 
 #### 2. 运行安装向导
-<img width="640" height="480" alt="QQ_1766147865981" src="https://github.com/user-attachments/assets/99000044-5381-4e22-9e91-425c1d1f055b" />
-*图：安装程序欢迎界面*
+<img width="640" height="480" alt="QQ_1766147865981" src="https://github.com/user-attachments/assets/99000044-5381-4e22-9e91-425c1d1f055b" />  
+*图：安装程序欢迎界面*  
 
 #### 3. 自动检测Visual Studio
-<img width="640" height="480" alt="QQ_1766147903306" src="https://github.com/user-attachments/assets/5e2750fd-def1-4611-962b-9c06033a61f0" />
-*图：自动检测已安装的Visual Studio版本*
+<img width="640" height="480" alt="QQ_1766147903306" src="https://github.com/user-attachments/assets/5e2750fd-def1-4611-962b-9c06033a61f0" />  
+*图：自动检测已安装的Visual Studio版本*  
 
 #### 4. 安装进指定目录
-<img width="640" height="480" alt="QQ_1766147920349" src="https://github.com/user-attachments/assets/72db1af4-3c7e-4dc8-b6e3-ebb618d29828" />
-*图：安装完成后，PA2D的安装位置*
+<img width="640" height="480" alt="QQ_1766147920349" src="https://github.com/user-attachments/assets/72db1af4-3c7e-4dc8-b6e3-ebb618d29828" />  
+*图：安装完成后，PA2D的安装位置*  
 
 #### 5. 在Visual Studio中使用
-安装完成后，在Visual Studio项目中：
+安装完成后，在Visual Studio项目中：  
 ```cpp
 #include <pa2d.h>
 using namespace pa2d;
 
-// 现在可以开始使用了！
+// 现在可以开始使用了！  
 ```
 
 #### 有经验的用户可选择github仓库下载库文件手动安装
