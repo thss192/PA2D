@@ -28,7 +28,8 @@ int main(){
 ```  
   
   运行后，我们就会获得以下的窗口      
-<img width="640" height="480" alt="QQ_1766144139681" src="https://github.com/user-attachments/assets/ef4dcf9e-82d8-46b6-a809-be4d50f531a5" />
+<img width="640" height="480" alt="QQ_1766144139681" src="https://github.com/user-attachments/assets/ef4dcf9e-82d8-46b6-a809-be4d50f531a5" />  
+  
   *图：第一个窗口示例*  
   
 PA2D 是基于面向对象的  
@@ -50,8 +51,9 @@ int main() {
     window.waitForClose();
 }
 ```
-<img width="640" height="480" alt="QQ_1766149996782" src="https://github.com/user-attachments/assets/ea8c6c8c-4983-4bf8-8f11-2a704d7ec496" />
-    *图：多窗口示例*  
+<img width="640" height="480" alt="QQ_1766149996782" src="https://github.com/user-attachments/assets/ea8c6c8c-4983-4bf8-8f11-2a704d7ec496" />  
+  
+*图：多窗口示例*  
 	
 ###  Step 2: 在Canvas类上绘制图形
   PA2D 的框架会方便你做出许多有趣的效果    
