@@ -25,16 +25,14 @@ int main(){
   // 防止程序立即退出
   window.waitForClose();
 }
-```
-
-运行后，我们就会获得以下的窗口    
-<img width="640" height="480" alt="QQ_1766144139681" src="https://github.com/user-attachments/assets/ef4dcf9e-82d8-46b6-a809-be4d50f531a5" />
+```  
   
-PA2D 大部分常用方法都在对象的方法里，很方便用户平时预览  
+  运行后，我们就会获得以下的窗口      
+<img width="640" height="480" alt="QQ_1766144139681" src="https://github.com/user-attachments/assets/ef4dcf9e-82d8-46b6-a809-be4d50f531a5" />
+  *图：第一个窗口示例*  
+  
 PA2D 是基于面向对象的  
-你或许会在使用过程中探索到一些有趣的功能  
-例如：让我们"**克隆**"一个窗口  
-
+你或许会在使用过程中探索到一些有趣的功能:  
 ```cpp
 #include <pa2d.h>
 using namespace pa2d;
@@ -43,7 +41,7 @@ int main() {
     Window window(640, 480, "Original Window");
     Window clonedWindow = window;  // 复制构造
     
-    // 两个窗口都显示
+    // 显式两个窗口
     window.show().setPosition(100, 100);
     clonedWindow.show().setPosition(800, 100)
                       .setTitle("Cloned Window");
@@ -52,14 +50,12 @@ int main() {
     window.waitForClose();
 }
 ```
-  
-会获得以下效果  
 <img width="640" height="480" alt="QQ_1766149996782" src="https://github.com/user-attachments/assets/ea8c6c8c-4983-4bf8-8f11-2a704d7ec496" />
-  
-###  Step 2: 尝试在Canvas类上绘制图形
-PA2D 的框架会方便你做出许多有趣的效果  
-不过当下之急，让我们在窗口上绘制上一些东西  
-这才是图形库的核心功能  
+    *图：多窗口示例*  
+	
+###  Step 2: 在Canvas类上绘制图形
+  PA2D 的框架会方便你做出许多有趣的效果    
+  让我们在窗口上绘制东西  
 ```cpp
 #include<pa2d.h>
 // 创建一个 640*480 的窗口
@@ -79,35 +75,53 @@ int main() {
 <img width="640" height="480" alt="QQ_1766145245946" src="https://github.com/user-attachments/assets/5334ceda-f323-45ea-bf28-594636179fe6" />
 
 ## 关于 PA2D 的语法
-我理解这里会出现一些"**黑魔法**"的语法  
-但我希望用户会喜欢这些方便灵活的语法  
-
-### 字面量样式
-我们使用加号将几个`Style`样式拼接起来，以实现不同的效果
+PA2D 采用了一些现代C++的语法特性，让代码更简洁直观。  
+如果你第一次见到这些"**黑魔法**"，不用担心，它们其实很简单！  
+  
+### 🔤 字面量样式
 ```cpp
-  // 字面量语法
+  // 传统方式
+  // Style style{};
+  // style.fill_ = 0xFF00FF00;  // ARGB: 透明度,红,绿,蓝
+  // style.stroke_ = 0xFFFF0000;
+  // style.width_ = 3;
+
+  // PA2D的字面量语法
   // 不透明绿色(填充) +  不透明红色(线框) + 3像素线宽
 	Style style = 0xFF00FF00_fill + 0xFFFF0000_stroke + 3_w;
 	canvas.circle(100, 100, 60, style);
-  // 也支持字符串的字面量
+  // 支持多种语法
   Style Red_fill = "255,255,0,0"_fill;
   Style Green_stroke = "#00FF00"_stroke;  //自动补充为不透明
   Style newStyle = Red_fill + Green_stroke;
 ```
-PA2D默认支持透明度和抗锯齿，颜色使用"ARGB"  
-其内存布局为`struct { uint8_t b, g, r, a; };`  
-
-### 链式调用
+  
+原理：通过后缀 _fill、_w 等将数字直接转换为对象。  
+  
+### 🔗链式调用
 ```cpp
 	// 半透明颜色
 	Style style = 0x800000FF_fill + 0x80FF0000_stroke ;
+
+	// 传统方式（需要重复对象名）
+	// canvas.circle(100, 100, 60, style + 2_w);
+    // canvas.rect(100, 100, 120, 80, style + 4_w);
+
+	// 链式调用（更流畅！）
 	canvas.circle(100, 100, 60, style + 2_w) // 不同宽度
 		.rect(100, 100, 120, 80, style + 4_w);
 ```
+  
+原理：每个方法都返回对象自身的引用，可以连续调用。  
 <img width="640" height="480" alt="QQ_1766146318998" src="https://github.com/user-attachments/assets/a35bd2f2-5255-4912-9609-c69100ca82cd" />
 
-我相信这种语法会在处理多个画布和窗口对象时  
-会让代码非常清晰和结构化  
+💡 为什么这样设计？  
+· 代码更简洁：减少重复  
+· 可读性更高：操作顺序一目了然  
+· 符合直觉：像自然语言一样表达  
+
+这些语法都是可选的，你也可以使用传统写法。  
+但一旦习惯，你会发现它们让图形编程变得更加愉快！ 
 
 ## PA2D 当前的功能
   
