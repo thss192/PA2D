@@ -45,10 +45,12 @@ int main() {
     Window clonedWindow = window;  // 复制构造
     
     // 显式两个窗口
-    window.show().setPosition(100, 100);
-    clonedWindow.show().setPosition(800, 100)
-                      .setTitle("Cloned Window");
-    
+    window.show()
+		.setPosition(100, 100);
+    clonedWindow.show()
+		.setPosition(800, 100)
+        .setTitle("Cloned Window");
+
     // 等待原始窗口关闭
     window.waitForClose();
 }
