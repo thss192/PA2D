@@ -345,8 +345,6 @@ namespace pa2d {
         Canvas& triangle(float x0, float y0, float x1, float y1, float x2, float y2, const Style& style);
         Canvas& rect(float left, float top, float width, float height, const Style& style);
         Canvas& rect(float centerX, float centerY, float width, float height, float angle, const Style& style);
-        Canvas& roundRect(float left, float top, float width, float height, const Style& style);
-        Canvas& roundRect(float centerX, float centerY, float width, float height, float angle, const Style& style);
         Canvas& circle(float centerX, float centerY, float radius, const Style& style);
         Canvas& ellipse(float centerX, float centerY, float width, float height, const Style& style);
         Canvas& ellipse(float centerX, float centerY, float width, float height, float angle, const Style& style);
@@ -554,8 +552,8 @@ namespace pa2d {
     void triangle(Buffer& buffer, float x0, float y0, float x1, float y1, float x2, float y2, const Color& fillColor, const Color& strokeColor, float strokeWidth);
     void rect(Buffer& buffer, float left, float top, float width, float height, const Color& fillColor, const Color& strokeColor, float strokeWidth);
     void rect(Buffer& buffer, float centerX, float centerY, float width, float height, float angle, const Color& fillColor, const Color& strokeColor, float strokeWidth);
-    void roundRect(Buffer& buffer, float left, float top, float width, float height, const Color& fillColor, const Color& strokeColor, float strokeWidth, float radius);
-    void roundRect(Buffer& buffer, float centerX, float centerY, float width, float height, float angle, const Color& fillColor, const Color& strokeColor, float strokeWidth, float radius);
+    void roundRect(Buffer& buffer, float left, float top, float width, float height, const Color& fillColor, const Color& strokeColor, float radius, float strokeWidth);
+    void roundRect(Buffer& buffer, float centerX, float centerY, float width, float height, float angle, const Color& fillColor, const Color& strokeColor, float radius, float strokeWidth);
     void circle(Buffer& buffer, float centerX, float centerY, float radius, const Color& fillColor, const Color& strokeColor, float strokeWidth);
     void ellipse(Buffer& buffer, float centerX, float centerY, float width, float height, const Color& fillColor, const Color& strokeColor, float strokeWidth);
     void ellipse(Buffer& buffer, float centerX, float centerY, float width, float height, float angle, const Color& fillColor, const Color& strokeColor, float strokeWidth);
