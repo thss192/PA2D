@@ -73,7 +73,8 @@ namespace pa2d {
     TextEncoding getTextEncoding();
     void setTextEncoding(TextEncoding encoding);
     class FontStyle {
-        int styleBits_; float italicAngle_, rotationAngle_;
+        int styleBits_;
+        float italicAngle_, rotationAngle_;
     public:
         static const FontStyle Regular, Bold, Italic, Underline, Strikeout;
         FontStyle italicAngle(float angle) const;
@@ -105,16 +106,17 @@ namespace pa2d {
         Point(float x, float y);
         Point operator+(const Point& rhs) const;    Point& operator+=(const Point& rhs);
         Point operator-(const Point& rhs) const;    Point& operator-=(const Point& rhs);
-        Point& operator+=(float rhs);   Point operator+(float rhs) const;
-        Point& operator-=(float rhs);   Point operator-(float rhs) const;
-        Point& operator*=(float rhs);   Point operator*(float rhs) const;
-        Point& operator/=(float rhs);   Point operator/(float rhs) const;
+        Point operator+(float rhs) const;           Point& operator+=(float rhs);
+        Point operator-(float rhs) const;           Point& operator-=(float rhs);
+        Point operator*(float rhs) const;           Point& operator*=(float rhs);
+        Point operator/(float rhs) const;           Point& operator/=(float rhs);
         Point operator-() const;
         bool operator==(const Point& rhs) const;
         bool operator!=(const Point& rhs) const;
         friend Point operator*(float scalar, const Point& point);
         Point& translate(float dx, float dy);
-        Point& scale(float scaleX, float scaleY); Point& scale(float scale);
+        Point& scale(float scale);
+        Point& scale(float scaleX, float scaleY);
         Point& rotate(float angle, float centerX = 0, float centerY = 0);
     };
     struct PointInt { int x, y; };
@@ -135,9 +137,9 @@ namespace pa2d {
     virtual ClassName& scale(float scaleX, float scaleY) PureVirtual; \
     virtual ClassName& scaleOnSelf(float scaleX, float scaleY) PureVirtual; \
     virtual ClassName& scaleOnSelf(float scale) PureVirtual; \
+    virtual ClassName& rotate(float angle) PureVirtual; \
     virtual ClassName& rotate(float angle, float centerX, float centerY) PureVirtual; \
     virtual ClassName& rotate(float angle, Point center) PureVirtual; \
-    virtual ClassName& rotate(float angle) PureVirtual; \
     virtual ClassName& rotateOnSelf(float angle) PureVirtual; \
     virtual bool contains(Point point) const PureVirtual; \
     virtual Rect getBoundingBox() const PureVirtual; \
@@ -159,7 +161,8 @@ namespace pa2d {
     class Line : public Shape {
         Point start_, end_;
     public:
-        Line(); Line(float x0, float y0, float x1, float y1);
+        Line();
+        Line(float x0, float y0, float x1, float y1);
         Line(const Point& start, const Point& end);
         Line& start(float x, float y); Line& start(const Point& start);
         Line& end(float x, float y);   Line& end(const Point& end);
@@ -171,7 +174,8 @@ namespace pa2d {
     class Polygon : public Shape {
         Points points_;
     public:
-        Polygon(); Polygon(const std::vector<Point>& points);
+        Polygon();
+        Polygon(const std::vector<Point>& points);
         std::vector<Point>& getPoints();    const std::vector<Point>& getPoints() const;
         PA2D_SHAPE_API(Polygon, override)
         Polygon& operator=(const std::vector<Point>& vec);
@@ -184,7 +188,8 @@ namespace pa2d {
         mutable std::array<Point, 4> cachedVertices_;
         mutable bool verticesDirty_;
     public:
-        Rect(); Rect(float centerX, float centerY, float width, float height, float rotation = 0.0f);
+        Rect();
+        Rect(float centerX, float centerY, float width, float height, float rotation = 0.0f);
         Rect(const std::vector<Point>& points);
         Rect& center(const Point& center);  Rect& center(float x, float y);
         Rect& width(float width);           float width() const;
@@ -202,8 +207,9 @@ namespace pa2d {
     class Triangle : public Shape {
         std::array<Point, 3> vertices_;
     public:
-        Triangle(); Triangle(const Point& p0, const Point& p1, const Point& p2);
-        Triangle(float px0, float py0, float px1, float py1, float px2, float py2);
+        Triangle();
+        Triangle(const Point& p0, const Point& p1, const Point& p2);
+        Triangle(float x0, float y0, float x1, float y1, float x2, float y2);
         Triangle(const std::vector<Point>& points);
         auto begin();   auto begin() const;
         auto end();     auto end() const;
@@ -217,7 +223,8 @@ namespace pa2d {
         Point center_;
         float width_, height_, rotation_;
     public:
-        Elliptic(); Elliptic(float centerX, float centerY, float width, float height, float rotation = 0.0f);
+        Elliptic();
+        Elliptic(float centerX, float centerY, float width, float height, float rotation = 0.0f);
         Elliptic& x(float x);                   float x() const;
         Elliptic& y(float y);                   float y() const;
         Elliptic& center(const Point& center);  Elliptic& center(float x, float y);
@@ -232,7 +239,8 @@ namespace pa2d {
         Point center_;
         float radius_;
     public:
-        Circle(); Circle(float centerX, float centerY, float radius);
+        Circle();
+        Circle(float centerX, float centerY, float radius);
         Circle(const Point& center, float radius);
         Circle& x(float x);                     float x() const;
         Circle& y(float y);                     float y() const;
@@ -246,7 +254,8 @@ namespace pa2d {
         Point center_;
         float radius_, startAngle_, endAngle_;
     public:
-        Sector(); Sector(Point center, float radius, float startAngle = 0.0f, float endAngle = 360.0f);
+        Sector();
+        Sector(Point center, float radius, float startAngle = 0.0f, float endAngle = 360.0f);
         Sector(float centerX, float centerY, float radius, float startAngle = 0.0f, float endAngle = 360.0f);
         Sector& x(float x);                     float x() const;
         Sector& y(float y);                     float y() const;
@@ -366,8 +375,8 @@ namespace pa2d {
         Canvas& draw(const Canvas& src, float centerX, float centerY, int alpha = 255);
         Canvas& drawResized(const Canvas& src, float centerX, float centerY, int width, int height);
         Canvas& drawScaled(const Canvas& src, float centerX, float centerY, float scaleX, float scaleY);
-        Canvas& drawRotated(const Canvas& src, float centerX, float centerY, float rotation);
         Canvas& drawScaled(const Canvas& src, float centerX, float centerY, float scale);
+        Canvas& drawRotated(const Canvas& src, float centerX, float centerY, float rotation);
         Canvas& drawTransformed(const Canvas& src, float centerX, float centerY, float scale, float rotation);
         Canvas& drawTransformed(const Canvas& src, float centerX, float centerY, float scaleX, float scaleY, float rotation);
         // ==================== IMAGE TRANSFORM COPIES ====================
@@ -622,7 +631,6 @@ inline pa2d::Style operator"" _stroke(const char* str, size_t len) { return pa2d
 #pragma comment(lib, "gdi32.lib")
 #pragma comment(lib, "shell32.lib")
 #endif
-#pragma comment(linker, "/ARCH:AVX2")
 
 #ifdef _DEBUG
 #pragma comment(lib, "pa2dd.lib")
