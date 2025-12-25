@@ -388,14 +388,14 @@ namespace pa2d {
         Canvas transformed(float scale, float rotation) const;
         Canvas transformed(float scaleX, float scaleY, float rotation) const;
         // ==================== TEXT RENDERING ====================
-        Canvas& text(const std::wstring& text, int x, int y, const Color& color = Black, int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
-        Canvas& text(const std::string& text, int x, int y, const Color& color = Black, int fontSize = 16, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
-        Canvas& textCentered(const std::wstring& text, int centerX, int centerY, const Color& color = Black, int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
-        Canvas& textCentered(const std::string& text, int centerX, int centerY, const Color& color = Black, int fontSize = 16, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
-        Canvas& textInRect(const std::wstring& text, int left, int top, int width, int height, const Color& color = Black, int fontSize = 16, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
-        Canvas& textInRect(const std::string& text, int left, int top, int width, int height, const Color& color = Black, int fontSize = 16, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
-        Canvas& textFitRect(const std::wstring& text, int left, int top, int width, int height, const Color& color = Black, int preferredFontSize = -1, const std::wstring& fontName = L"Microsoft YaHei", FontStyle style = FontStyle::Regular);
-        Canvas& textFitRect(const std::string& text, int left, int top, int width, int height, const Color& color = Black, int preferredFontSize = -1, const std::string& fontName = "Microsoft YaHei", FontStyle style = FontStyle::Regular);
+        Canvas& text(int x, int y, const std::wstring& text, int fontSize = 16, const Color& color = 0xFF000000, FontStyle style = FontStyle::Regular, const std::wstring& fontName = L"Microsoft YaHei");
+        Canvas& text(int x, int y, const std::string& text, int fontSize = 16, const Color& color = 0xFF000000, FontStyle style = FontStyle::Regular, const std::string& fontName = "Microsoft YaHei");
+        Canvas& textCentered(int centerX, int centerY, const std::wstring& text, int fontSize = 16, const Color& color = 0xFF000000, FontStyle style = FontStyle::Regular, const std::wstring& fontName = L"Microsoft YaHei");
+        Canvas& textCentered(int centerX, int centerY, const std::string& text, int fontSize = 16, const Color& color = 0xFF000000, FontStyle style = FontStyle::Regular, const std::string& fontName = "Microsoft YaHei");
+        Canvas& textInRect(int rectX, int rectY, int rectWidth, int rectHeight, const std::wstring& text, int fontSize = 16, const Color& color = 0xFF000000, FontStyle style = FontStyle::Regular, const std::wstring& fontName = L"Microsoft YaHei");
+        Canvas& textInRect(int rectX, int rectY, int rectWidth, int rectHeight, const std::string& text, int fontSize = 16, const Color& color = 0xFF000000, FontStyle style = FontStyle::Regular, const std::string& fontName = "Microsoft YaHei");
+        Canvas& textFitRect(int rectX, int rectY, int rectWidth, int rectHeight, const std::wstring& text, int preferredFontSize = 16, const Color& color = 0xFF000000, FontStyle style = FontStyle::Regular, const std::wstring& fontName = L"Microsoft YaHei");
+        Canvas& textFitRect(int rectX, int rectY, int rectWidth, int rectHeight, const std::string& text, int preferredFontSize = 16, const Color& color = 0xFF000000, FontStyle style = FontStyle::Regular, const std::string& fontName = "Microsoft YaHei");
     };
     // ==================== WINDOW ====================
     // Thread-per-window architecture (background message loops)
@@ -585,15 +585,16 @@ namespace pa2d {
     void screenBlend(const Buffer& src, Buffer& dest, int x, int y, int alpha);
     void overlayBlend(const Buffer& src, Buffer& dest, int x, int y, int alpha);
     void destAlphaBlend(const Buffer& src, Buffer& dest, int x, int y, int alpha);
-    bool text(Buffer& buffer, const std::wstring& text, float x, float y, const Color& color, int fontSize, const std::wstring& fontName, const FontStyle& style);
-    bool text(Buffer& buffer, const std::string& text, float x, float y, const Color& color, int fontSize, const std::string& fontName, const FontStyle& style);
-    bool textCentered(Buffer& buffer, const std::wstring& text, float centerX, float centerY, const Color& color, int fontSize, const std::wstring& fontName, const FontStyle& style);
-    bool textCentered(Buffer& buffer, const std::string& text, float centerX, float centerY, const Color& color, int fontSize, const std::string& fontName, const FontStyle& style);
-    bool textInRect(Buffer& buffer, const std::wstring& text, float left, float top, float width, float height, const Color& color, int fontSize, const std::wstring& fontName, const FontStyle& style);
-    bool textInRect(Buffer& buffer, const std::string& text, float left, float top, float width, float height, const Color& color, int fontSize, const std::string& fontName, const FontStyle& style);
-    bool textFitRect(Buffer& buffer, const std::wstring& text, float left, float top, float width, float height, const Color& color, int preferredFontSize, const std::wstring& fontName, const FontStyle& style);
-    bool textFitRect(Buffer& buffer, const std::string& text, float left, float top, float width, float height, const Color& color, int preferredFontSize, const std::string& fontName, const FontStyle& style);
-}
+    bool text(Buffer& buffer, float x, float y, const std::wstring& text, int fontSize, const Color& color, const FontStyle& style, const std::wstring& fontName);
+    bool text(Buffer& buffer, float x, float y, const std::string& text, int fontSize, const Color& color, const FontStyle& style, const std::string& fontName);
+    bool textCentered(Buffer& buffer, float centerX, float centerY, const std::wstring& text, int fontSize, const Color& color, const FontStyle& style, const std::wstring& fontName);
+    bool textCentered(Buffer& buffer, float centerX, float centerY, const std::string& text, int fontSize, const Color& color, const FontStyle& style, const std::string& fontName);
+    bool textInRect(Buffer& buffer, float rectX, float rectY, float rectWidth, float rectHeight, const std::wstring& text, int fontSize, const Color& color, const FontStyle& style, const std::wstring& fontName);
+    bool textInRect(Buffer& buffer, float rectX, float rectY, float rectWidth, float rectHeight, const std::string& text, int fontSize, const Color& color, const FontStyle& style, const std::string& fontName);
+    bool textFitRect(Buffer& buffer, float rectX, float rectY, float rectWidth, float rectHeight, const std::wstring& text, int preferredFontSize, const Color& color, const FontStyle& style, const std::wstring& fontName);
+    bool textFitRect(Buffer& buffer, float rectX, float rectY, float rectWidth, float rectHeight, const std::string& text, int preferredFontSize, const Color& color, const FontStyle& style, const std::string& fontName);
+     }
+    // String °æ±¾
 #ifndef PA2D_DISABLE_LITERALS
 inline pa2d::Style operator"" _fill(unsigned long long hex) { return pa2d::Style().fill((uint32_t)hex); }
 inline pa2d::Style operator"" _stroke(unsigned long long hex) { return pa2d::Style().stroke((uint32_t)hex); }
