@@ -29,7 +29,7 @@ int main() {
             std::cout << "  - " << file << std::endl;
         }
 
-    });
+        });
 
     // ==================== 窗口显示 ====================
     window.show();  // 显示窗口（文件拖放功能自动启用）
@@ -38,8 +38,8 @@ int main() {
     while (window.isOpen()) {
         // 清空画布并绘制提示信息
         canvas.clear(White)  // 白色背景
-            .text(L"拖放文件到这里", 300, 280, Black, 24)  // 中文提示
-            .text(L"Drag files here", 300, 310, Black, 20);  // 英文提示
+            .text(300, 280, L"拖放文件到这里", 24, Black)  // 中文提示
+            .text(300, 310, L"Drag files here", 20, Black);  // 英文提示
 
         // 渲染到窗口
         window.render(canvas);
