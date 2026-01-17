@@ -13,8 +13,8 @@ PA2D 是一个基于CPU管道的、高性能且轻量、过程透明的图形库
 1. **技术独特** ：基于位图的软渲染管道，CPU端图形绘制(SIMD优化)
 2. **学习友好** ：不沿用旧范式，有着像素渲染的纯粹性、接口极简的易用性
 3. **架构解耦** ：渲染逻辑与窗口逻辑解耦，提高了灵活性和扩展性
-4. **接口易用** ：使用统一的接口风格，智能提示友好，无状态机、极少枚举
-5. **功能精简** ：默认透明度、抗锯齿，坚持C++风格，支持各种图像操作与混合模式等常用功能
+4. **接口易用** ：坚持统一的C++风格接口，智能提示友好，极少使用枚举和状态机
+5. **功能精简** ：默认透明度、抗锯齿，支持各种图像操作与混合模式等常用功能
 6. **简洁头文件** ：整合制作了外部头文件，impl隐藏内部实现，易于查阅API，注释对AI友好
 7. **性能充足** ：可用于2D游戏、UI应用、(也可以自主实现3D)，位图预处理与SIMD可使效率优化十几倍
 
@@ -36,10 +36,24 @@ int main(){
   window.show()
     .render(canvas)
     .waitForClose();
+    return 0;
 }
 ```
   
 本项目采用MIT许可
+
+## 安装与配置
+
+PA2D主要在 **Microsoft Visual Studio (MSVC)** 上开发和测试，部分代码使用了MSVC特有的扩展和优化。其他编译器（GCC/Clang）可能需要调整。
+
+**Visual Studio用户 - 零配置体验**：
+1. 从[官网](https://PrismArch.cn)下载安装程序
+2. 运行安装程序，自动配置开发环境
+3. 新建项目后直接使用 `#include <pa2d.h>` 即可
+
+**其他编译器用户**：
+需要手动对源码进行一些调整，以适应不同的编译环境。
+
 
 <a id="english"></a>
 # PA2D Graphics Library
@@ -53,13 +67,13 @@ PA2D is a CPU pipeline-based, high-performance, lightweight, and process-transpa
 3. **Procedural Algorithm** - Fully transparent process, building the entire rendering pipeline
 
 Its distinctive features:
-1. **Unique Technology**: Bitmap-based software rendering pipeline, CPU-side graphics drawing (SIMD optimized)
-2. **Learning-Friendly**: Doesn't follow old paradigms, offers the purity of pixel rendering and minimalist interface ease-of-use
-3. **Architecture Decoupling**: Rendering logic is decoupled from window logic, improving flexibility and extensibility
-4. **User-Friendly Interface**: Uses a unified interface style, IDE-intelligent suggestion friendly, no state machines, minimal enumerations
-5. **Streamlined Features**: Default transparency, anti-aliasing, adheres to C++ style, supports various image operations and blend modes
-6. **Concise Header File**: Integrated external header file, impl hides internal implementation, easy to browse API, comments are AI-friendly
-7. **Adequate Performance**: Can be used for 2D games, UI applications, (also supports custom 3D implementation), bitmap preprocessing and SIMD can optimize efficiency by over ten times
+1. **Unique Technology**: Bitmap-based software rendering pipeline, CPU-side graphics drawing with SIMD optimization
+2. **Learning-Friendly**: Breaks away from old paradigms, offering the purity of pixel rendering with minimalist and intuitive interfaces
+3. **Architecture Decoupling**: Render logic is decoupled from window logic, enhancing flexibility and extensibility
+4. **User-Friendly Interface**: Maintains consistent C++-style interfaces, IDE-friendly with intelligent suggestions, rarely uses enumerations or state machines
+5. **Streamlined Features**: Built-in transparency and anti-aliasing, supports various image operations and blend modes among other essential functions
+6. **Concise Header File**: Consolidated external header files, hides internal implementation with impl, easy to browse APIs, with AI-friendly comments
+7. **Adequate Performance**: Suitable for 2D games, UI applications (also supports custom 3D implementations), bitmap preprocessing and SIMD can boost efficiency by over tenfold
 
 Here's a simple example code:
 
@@ -85,3 +99,15 @@ int main(){
 ```
 
 This project is licensed under MIT.
+
+## Installation & Configuration
+
+PA2D is primarily developed and tested on **Microsoft Visual Studio (MSVC)**, with some code utilizing MSVC-specific extensions and optimizations. Other compilers (GCC/Clang) may require adjustments.
+
+**Visual Studio Users - Zero‑Configuration Experience**:
+1. Download the installer from the [official website](https://PrismArch.cn)
+2. Run the installer to automatically set up the development environment
+3. Simply use `#include <pa2d.h>` in your new project
+
+**Other Compiler Users**:
+Manual adjustments to the source code may be needed to adapt to different compilation environments.
